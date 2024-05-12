@@ -26,6 +26,7 @@ const PredictionForm = () => {
     blood_pressure: '',
     cholesterol_level: '',
     history_of_stroke: 'Yes',
+    history_of_diabetes: 'Yes',
     alcohol_consumption_status: 'Drinker',
     smoker: 'Yes',
     engage_physical_activities: 'Yes',
@@ -149,7 +150,7 @@ const PredictionForm = () => {
               <option value='Female'>Female</option>
             </select>
           </div>
-          <div className=' col-span-1    flex flex-col'>
+          <div className=' col-span-1 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               BMI:
             </label>
@@ -178,28 +179,30 @@ const PredictionForm = () => {
               </div>
             </div>
           </div>
-          <div className=' col-span-7 flex flex-col'>
-            <label className=' text-white font-semibold text-xl ms-3'>
+          
+          <div className='col-span-6 flex flex-col'>
+            <label className='text-white font-semibold text-xl ms-3'>
               Patient’s Cholesterol Level:
             </label>
-            <div className='flex w-full gap-2'>
-              <input
-                type='text'
+          <div className='flex w-full gap-2'>
+            <input
+              type='text'
                 className='bg-white h-10 rounded-md w-full'
                 onChange={handleFormChange}
                 name='cholesterol_level'
                 required
               />
-              <div className='bg-[#15545A] text-white px-6 flex items-end pb-2  text-xs rounded-md'>
+              <div className='bg-[#15545A] text-white px-6 flex items-end pb-2 text-xs rounded-md'>
                 <span>mg/dL</span>
               </div>
             </div>
           </div>
-          <div className=' col-span-5 flex flex-col'>
+
+          <div className=' col-span-3 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               Have history of stroke?
             </label>
-
+            
             <select
               className='bg-white h-10 rounded-md'
               onChange={handleFormChange}
@@ -210,6 +213,23 @@ const PredictionForm = () => {
               <option value='No'>No</option>
             </select>
           </div>
+
+          <div className='col-span-3 flex flex-col'>
+            <label className=' text-white font-semibold text-xl ms-3'>
+              Have history of diabetes?
+            </label>
+
+            <select
+              className='bg-white h-10 rounded-md'
+              onChange={handleFormChange}
+              name='history_of_diabetes'
+              required
+            >
+              <option value='Yes'>Yes</option>
+              <option value='No'>No</option>
+            </select>
+          </div>
+
           <div className=' col-span-5 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               Alcohol consumption status:

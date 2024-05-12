@@ -56,7 +56,7 @@ const ModalNew = ({ setModalNew, handleResetForm }) => {
                   setModalNew(false)
                 }}
               >
-                Save
+                Continue
               </button>
             </div>
           </div>

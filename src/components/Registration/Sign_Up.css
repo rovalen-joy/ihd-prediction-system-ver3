@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Open+Sans:wght@300;700&display=swap'); /* for fonts */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css'); /* for icons */
+
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    #70d1da 25%,
+    #25b1bd 62%,
+    #00a5b3 100%
+  );
+}
+
+.signup-box {
+  padding: 40px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+  width: 400px;
+  max-width: 100%;
+  min-width: 300px;
+}
+
+.welcome-text {
+  font-family: 'Lato', sans-serif;
+  font-size: 60px;
+  color: #333;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  word-wrap: break-word;
+}
+
+.input-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  color: #2da9b5;
+  text-align: left;
+  display: block;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  background-color: transparent;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-bottom: 2px solid #2da9b5;
+}
+
+.input-group i {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  color: #555;
+  cursor: pointer;
+}
+
+.text-center {
+  font-size: 15px;
+  font-family: 'Open Sans', sans-serif;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.text-center a {
+  font-weight: bold;
+  color: #23929d;
+}
+
+.text-center span {
+  font-weight: 300;
+}

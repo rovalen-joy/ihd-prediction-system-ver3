@@ -79,6 +79,7 @@ const PredictionTable = () => {
             </select>
           </div>
         </div>
+        <div className='overflow-x-auto'> 
         <table className='w-full overflow-hidden rounded-md'>
           <thead>
             <tr className='bg-[#299FA8] text-white '>
@@ -90,34 +91,26 @@ const PredictionTable = () => {
               <th className='font-medium font-sans py-3'>BMI</th>
               <th className='font-medium font-sans py-3'>Blood Pressure</th>
               <th className='font-medium font-sans py-3'>Cholesterol Level</th>
+              <th className='font-medium font-sans py-3'>Risk Percentage</th>
             </tr>
           </thead>
           <tbody>
             {patients.map((data, i) => (
-              <tr
-                key={i}
-                className='bg-white text-center font-medium'
-              >
+              <tr key={i} className='bg-white text-center font-medium'>
                 <td className='font-medium font-sans py-3'>{data.id}</td>
-                <td className='font-medium font-sans py-3'>
-                  {data.data.lastname}
-                </td>
-                <td className='font-medium font-sans py-3'>
-                  {data.data.firstname}
-                </td>
+                <td className='font-medium font-sans py-3'>{data.data.lastname}</td>
+                <td className='font-medium font-sans py-3'>{data.data.firstname}</td>
                 <td className='font-medium font-sans py-3'>{data.data.age}</td>
                 <td className='font-medium font-sans py-3'>{data.data.sex}</td>
                 <td className='font-medium font-sans py-3'>{data.data.bmi}</td>
-                <td className='font-medium font-sans py-3'>
-                  {data.data.blood_pressure}
-                </td>
-                <td className='font-medium font-sans'>
-                  {data.data.cholesterol_level}
-                </td>
+                <td className='font-medium font-sans py-3'>{data.data.blood_pressure}</td>
+                <td className='font-medium font-sans py-3'>{data.data.cholesterol_level}</td>
+                <td className='font-medium font-sans py-3'>{data.data.risk_percentage}%</td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   )

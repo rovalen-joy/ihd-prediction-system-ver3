@@ -62,6 +62,7 @@ const PredictionForm = () => {
         ...details,
         timestamp: Timestamp.now(),
         userid: user.uid,
+        risk_percentage: results,
       })
       toast.dismiss('loadingResults')
       toast.success('Saved Successfully')
@@ -156,6 +157,7 @@ const PredictionForm = () => {
             </label>
             <input
               type='number'
+              step='0.01'
               className='bg-white h-10 rounded-md'
               onChange={handleFormChange}
               name='bmi'

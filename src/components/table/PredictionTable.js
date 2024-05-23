@@ -91,7 +91,7 @@ const PredictionTable = () => {
               <th className='font-medium font-sans py-3'>BMI</th>
               <th className='font-medium font-sans py-3'>Blood Pressure</th>
               <th className='font-medium font-sans py-3'>Cholesterol Level</th>
-              <th className='font-medium font-sans py-3'>Risk Percentage</th>
+              <th className='font-medium font-sans py-3'>Risk Result</th>
             </tr>
           </thead>
           <tbody>
@@ -105,7 +105,7 @@ const PredictionTable = () => {
                 <td className='font-medium font-sans py-3'>{data.data.bmi}</td>
                 <td className='font-medium font-sans py-3'>{data.data.blood_pressure}</td>
                 <td className='font-medium font-sans py-3'>{data.data.cholesterol_level}</td>
-                <td className='font-medium font-sans py-3'>{data.data.risk_percentage}%</td>
+                <td className='font-medium font-sans py-3'>{data.data.risk_result}%</td>
               </tr>
             ))}
           </tbody>

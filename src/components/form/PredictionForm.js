@@ -6,8 +6,9 @@ import { collection, addDoc, Timestamp } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import { UserAuth } from '../../context/AuthContext'
 
-function getRandomNumber() {
-  return Math.floor(Math.random() * 100) + 1
+function isSusceptible() {
+
+  return Math.random() < 0.5 ? 'Susceptible' : 'Not Susceptible';
 }
 
 function hasAllValues(obj) {
@@ -37,8 +38,9 @@ const PredictionForm = () => {
   const [modalNew, setModalNew] = useState(false)
   const [modalSave, setModalSave] = useState(false)
 
-  const [results, setResults] = useState(0)
+  const [results, setResults] = useState('')
   const [details, setDetails] = useState(defaultDetails)
+  const [showResults, setShowResults] = useState(false)
 
   const formRef = useRef(null)
 
@@ -52,7 +54,8 @@ const PredictionForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     console.log(details)
-    setResults(getRandomNumber())
+    setResults(isSusceptible())
+    setShowResults(true)
   }
 
   const handleSaveData = async () => {
@@ -62,7 +65,7 @@ const PredictionForm = () => {
         ...details,
         timestamp: Timestamp.now(),
         userid: user.uid,
-        risk_percentage: results,
+        risk_result: results,
       })
       toast.dismiss('loadingResults')
       toast.success('Saved Successfully')
@@ -76,6 +79,7 @@ const PredictionForm = () => {
   const handleResetForm = () => {
     formRef.current.reset()
     setDetails(defaultDetails)
+    setShowResults(false)
   }
 
   return (
@@ -287,28 +291,15 @@ const PredictionForm = () => {
           </div>
         </form>
       </div>
-      <div className=' bg-[#00717A] rounded-md px-[3rem] py-8'>
-        <span className='text-white font-bold text-2xl'>Results</span>
-        <hr className=' bg-white h-[.10rem] my-4' />
-        <span className='text-white font-[400] text-xl'>
-          The patient has a risk percentage of {results}% of Ischemic Heart
-          Disease{' '}
-        </span>
-        <div className='px-[4rem]'>
-          <div className=' relative border-2 border-white text-center py-2 rounded-md text-white bg-[#B7F9FF] font-semibold text-2xl'>
-            &nbsp;
-            <div className=' absolute text-white w-full top-2 font-bold text-2xl z-10'>
-              {results}%
-            </div>
-            <div
-              style={{ width: `${results}%` }}
-              className='bg-[#003034]/80 absolute top-0 bottom-0 rounded-md '
-            >
-              &nbsp;
-            </div>
-          </div>
+      {showResults && (
+        <div className=' bg-[#00717A] rounded-md px-[3rem] py-8'>
+          <span className='text-white font-bold text-2xl'>Results</span>
+          <hr className=' bg-white h-[.10rem] my-4' />
+          <span className='text-white font-[400] text-xl'>
+            The patient is {results} for Ischemic Heart Disease.
+          </span>
         </div>
-      </div>
+      )}
       <div className=' flex justify-end gap-3'>
         <button
           onClick={() => {

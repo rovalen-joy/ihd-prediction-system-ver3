@@ -1,45 +1,67 @@
-from flask import Flask, request, jsonify
-import joblib
-import numpy as np
 import pandas as pd
+import joblib
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-# Load the model
-model = joblib.load(r'C:\Users\Calisnao\Desktop\IHD\backend\models\V2EMo2.joblib')
-
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
+
+# Load the trained model
+model = joblib.load('V2EMo2.joblib')
+
+# Define the expected feature order
+feature_order = ['HighBP', 'HighChol', 'Smoker', 'Stroke', 'Diabetes', 'Sex']
+
+# Define a mapping for encoding categorical values to numerical values
+encoding = {
+    'Sex': {'Male': 1, 'Female': 0},
+    'HighBP': {'High': 1, 'Low': 0},
+    'HighChol': {'High': 1, 'Low': 0},
+    'Stroke': {'Yes': 1, 'No': 0},
+    'Diabetes': {'Yes': 1, 'No': 0},
+    'Smoker': {'Yes': 1, 'No': 0}
+}
+
+# Define a mapping for the prediction result
+prediction_mapping = {1: "susceptible", 0: "not susceptible"}
 
 @app.route('/')
-def index():
-    return 'Hello, World!'
+def home():
+    return "Welcome to the IHD Prediction API"
 
 @app.route('/predict', methods=['POST'])
-def predict_heart_disease():
-    data = request.get_json()
-
-    # Ensure all necessary keys are present in the input data
-    expected_keys = ['HighBP', 'HighChol', 'Smoker', 'Stroke', 'Diabetes', 'Sex']
-    if not all(key in data for key in expected_keys):
-        return jsonify({'error': 'Missing data'}), 400
-
-    # Create a DataFrame from the input data
-    data_input = {key: [data[key]] for key in expected_keys}
-    input_df = pd.DataFrame(data_input)
-
-    # Ensure correct data types
-    input_df = input_df.astype(dtype={'HighBP': int, 'HighChol': int, 'Smoker': int, 'Stroke': int, 'Diabetes': int, 'Sex': int})
-
-    # Make predictions using the loaded model
-    prediction = model.predict(input_df)
-
-    # Prepare the response
-    if prediction[0] == 1:
-        prediction_text = "Based on the provided information, the model predicts that there is a chance of Ischemic Heart Disease."
-    else:
-        prediction_text = "Based on the provided information, the model predicts that there is no chance of Ischemic Heart Disease."
-
-    return jsonify({'prediction': prediction_text})
+def predict():
+    try:
+        data = request.get_json()
+        print("Received data:", data)  # Log the received data
+        
+        # Ensure the features are in the correct order
+        df = pd.DataFrame([data])
+        print("DataFrame before reordering:\n", df)
+        
+        df = df[feature_order]
+        print("DataFrame after reordering:\n", df)
+        
+        # Encode the categorical values
+        for column in df.columns:
+            if column in encoding:
+                df[column] = df[column].map(encoding[column])
+        
+        print("DataFrame after encoding:\n", df)
+        print("Data types of the DataFrame:\n", df.dtypes)
+        
+        # Make prediction
+        prediction = model.predict(df)[0]
+        print("Prediction result (numeric):", prediction)
+        
+        # Map the prediction result to the corresponding string value
+        prediction_str = prediction_mapping[prediction]
+        print("Prediction result (string):", prediction_str)
+        
+        return jsonify({'prediction': prediction_str})
+    except Exception as e:
+        print("Error:", str(e))  # Log the error
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

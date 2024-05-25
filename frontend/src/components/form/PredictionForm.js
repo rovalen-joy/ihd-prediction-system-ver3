@@ -1,15 +1,11 @@
-import React, { useRef, useState } from 'react'
-import ModalSave from '../Modal/ModalSave'
-import ModalNew from '../Modal/ModalNew'
-import { db } from '../../firebase'
-import { collection, addDoc, Timestamp } from 'firebase/firestore'
-import toast from 'react-hot-toast'
-import { UserAuth } from '../../context/AuthContext'
-
-function isSusceptible() {
-
-  return Math.random() < 0.5 ? 'Susceptible' : 'Not Susceptible';
-}
+import React, { useRef, useState } from 'react';
+import axios from 'axios';
+import ModalSave from '../Modal/ModalSave';
+import ModalNew from '../Modal/ModalNew';
+import { db } from '../../firebase';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import toast from 'react-hot-toast';
+import { UserAuth } from '../../context/AuthContext';
 
 function hasAllValues(obj) {
   const requiredFields = ['lastname', 'firstname', 'sex', 'blood_pressure', 'cholesterol_level', 'history_of_stroke', 'history_of_diabetes', 'smoker'];
@@ -26,32 +22,47 @@ const PredictionForm = () => {
     history_of_stroke: '',
     history_of_diabetes: '',
     smoker: '',
-  }
+  };
 
-  const { user } = UserAuth()
+  const { user } = UserAuth();
 
-  const [modalNew, setModalNew] = useState(false)
-  const [modalSave, setModalSave] = useState(false)
+  const [modalNew, setModalNew] = useState(false);
+  const [modalSave, setModalSave] = useState(false);
 
-  const [results, setResults] = useState('')
-  const [details, setDetails] = useState(defaultDetails)
-  const [showResults, setShowResults] = useState(false)
+  const [results, setResults] = useState('');
+  const [details, setDetails] = useState(defaultDetails);
+  const [showResults, setShowResults] = useState(false);
 
-  const formRef = useRef(null)
+  const formRef = useRef(null);
 
   const handleFormChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setDetails((prev) => {
-      return { ...prev, [name]: value }
-    })
-  }
+      return { ...prev, [name]: value };
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    console.log(details)
-    setResults(isSusceptible())
-    setShowResults(true)
-  }
+    e.preventDefault();
+    const formattedDetails = {
+      Sex: details.sex,
+      HighBP: details.blood_pressure,
+      HighChol: details.cholesterol_level,
+      Stroke: details.history_of_stroke,
+      Diabetes: details.history_of_diabetes,
+      Smoker: details.smoker
+    };
+    console.log('Sending data to backend:', formattedDetails);
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/predict', formattedDetails);
+      console.log('Received response from backend:', response.data);
+      setResults(response.data.prediction);
+      setShowResults(true);
+    } catch (error) {
+      console.error('There was an error making the request:', error);
+    }
+  };
+  
 
   const handleSaveData = async () => {
     try {
@@ -72,13 +83,13 @@ const PredictionForm = () => {
       toast.error(err.message);
       toast.dismiss('loadingResults');
     }
-  }
+  };
 
   const handleResetForm = () => {
-    formRef.current.reset()
-    setDetails(defaultDetails)
-    setShowResults(false)
-  }
+    formRef.current.reset();
+    setDetails(defaultDetails);
+    setShowResults(false);
+  };
 
   return (
     <div className='flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-[10rem]'>
@@ -228,45 +239,45 @@ const PredictionForm = () => {
       </div>
       {showResults && (
         <div className=' bg-[#00717A] rounded-md px-[3rem] py-8'>
-          <span className='text-white font-bold text-2xl'>Results</span>
-          <hr className=' bg-white h-[.10rem] my-4' />
-          <span className='text-white font-[400] text-xl'>
-            The patient is {results} for Ischemic Heart Disease.
-          </span>
-        </div>
-      )}
-      <div className=' flex justify-end gap-3'>
-        <button
-          onClick={() => {
-            if (!hasAllValues(details)) {
-              return toast.error('Incomplete Details');
-            }
-            setModalSave(true);
-          }}
-          type='button'
-          className=' bg-[#00717A] rounded-md text-white font-semibold px-6 py-2 text-xl hover:bg-[#239a98]'
-        >
-          Save
-        </button>
-        <button
-          onClick={() => setModalNew(true)}
-          type='button'
-          className=' bg-[#00717A] rounded-md text-white font-semibold px-6 py-2 text-xl hover:bg-[#239a98]'
-        >
-          Enter New Data
-        </button>
+        <span className='text-white font-bold text-2xl'>Results</span>
+        <hr className=' bg-white h-[.10rem] my-4' />
+        <span className='text-white font-[400] text-xl'>
+          The patient is {results} for Ischemic Heart Disease.
+        </span>
       </div>
-      {modalSave && (
-        <ModalSave
-          setModalSave={setModalSave}
-          handleSaveData={handleSaveData}
-        />
-      )}
-      {modalNew && (
-        <ModalNew setModalNew={setModalNew} handleResetForm={handleResetForm} />
-      )}
+    )}
+    <div className=' flex justify-end gap-3'>
+      <button
+        onClick={() => {
+          if (!hasAllValues(details)) {
+            return toast.error('Incomplete Details');
+          }
+          setModalSave(true);
+        }}
+        type='button'
+        className=' bg-[#00717A] rounded-md text-white font-semibold px-6 py-2 text-xl hover:bg-[#239a98]'
+      >
+        Save
+      </button>
+      <button
+        onClick={() => setModalNew(true)}
+        type='button'
+        className=' bg-[#00717A] rounded-md text-white font-semibold px-6 py-2 text-xl hover:bg-[#239a98]'
+      >
+        Enter New Data
+      </button>
     </div>
-  )
-}
+    {modalSave && (
+      <ModalSave
+        setModalSave={setModalSave}
+        handleSaveData={handleSaveData}
+      />
+    )}
+    {modalNew && (
+      <ModalNew setModalNew={setModalNew} handleResetForm={handleResetForm} />
+    )}
+  </div>
+);
+};
 
 export default PredictionForm

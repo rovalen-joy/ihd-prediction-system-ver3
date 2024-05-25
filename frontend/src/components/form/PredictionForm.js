@@ -12,25 +12,20 @@ function isSusceptible() {
 }
 
 function hasAllValues(obj) {
-  const values = Object.values(obj)
-
-  return values.every((value) => value !== '' && !!value)
+  const requiredFields = ['lastname', 'firstname', 'sex', 'blood_pressure', 'cholesterol_level', 'history_of_stroke', 'history_of_diabetes', 'smoker'];
+  return requiredFields.every(field => obj[field] && obj[field] !== '');
 }
 
 const PredictionForm = () => {
   const defaultDetails = {
     lastname: '',
     firstname: '',
-    age: '',
-    sex: 'Male',
-    bmi: '',
+    sex: '',
     blood_pressure: '',
     cholesterol_level: '',
-    history_of_stroke: 'Yes',
-    history_of_diabetes: 'Yes',
-    alcohol_consumption_status: 'Drinker',
-    smoker: 'Yes',
-    engage_physical_activities: 'Yes',
+    history_of_stroke: '',
+    history_of_diabetes: '',
+    smoker: '',
   }
 
   const { user } = UserAuth()
@@ -60,19 +55,22 @@ const PredictionForm = () => {
 
   const handleSaveData = async () => {
     try {
-      toast.loading('loading...', { id: 'loadingResults' })
+      if (!hasAllValues(details)) {
+        return toast.error('Incomplete Details');
+      }
+      toast.loading('loading...', { id: 'loadingResults' });
       await addDoc(collection(db, 'patients'), {
         ...details,
         timestamp: Timestamp.now(),
         userid: user.uid,
         risk_result: results,
-      })
-      toast.dismiss('loadingResults')
-      toast.success('Saved Successfully')
-      handleResetForm()
+      });
+      toast.dismiss('loadingResults');
+      toast.success('Saved Successfully');
+      handleResetForm();
     } catch (err) {
-      toast.error(err)
-      toast.dismiss('loadingResults')
+      toast.error(err.message);
+      toast.dismiss('loadingResults');
     }
   }
 
@@ -128,155 +126,92 @@ const PredictionForm = () => {
               required
             />
           </div>
-          <div className=' col-span-1 flex flex-col'>
-            <label className=' text-white font-semibold text-xl ms-3'>
-              Age:
-            </label>
-            <input
-              type='number'
-              className='bg-white h-10 rounded-md'
-              name='age'
-              onChange={handleFormChange}
-              required
-            />
-          </div>
-          <div className=' col-span-2 flex flex-col'>
+          <div className='col-span-4 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               Sex:
             </label>
-
             <select
               className='bg-white h-10 rounded-md'
               onChange={handleFormChange}
               required
               name='sex'
             >
+              <option value='' disabled selected>Select</option>
               <option value='Male'>Male</option>
               <option value='Female'>Female</option>
             </select>
           </div>
-          <div className=' col-span-1 flex flex-col'>
-            <label className=' text-white font-semibold text-xl ms-3'>
-              BMI:
-            </label>
-            <input
-              type='number'
-              step='0.01'
-              className='bg-white h-10 rounded-md'
-              onChange={handleFormChange}
-              name='bmi'
-              required
-            />
-          </div>
-          <div className=' col-span-8 flex flex-col'>
+          <div className='col-span-4 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               Patient’s Blood Pressure:
             </label>
-            <div className='flex w-full gap-2'>
-              <input
-                type='text'
-                className='bg-white h-10 rounded-md w-full'
-                onChange={handleFormChange}
-                name='blood_pressure'
-                required
-              />
-              <div className='bg-[#15545A] text-white px-6 flex items-end pb-2  text-xs rounded-md'>
-                <span>mmHg</span>
-              </div>
-            </div>
+            <select
+              className='bg-white h-10 rounded-md'
+              onChange={handleFormChange}
+              required
+              name='blood_pressure'
+            >
+              <option value='' disabled selected>Select</option>
+              <option value='Low'>Low</option>
+              <option value='High'>High</option>
+            </select>
           </div>
-          
-          <div className='col-span-6 flex flex-col'>
-            <label className='text-white font-semibold text-xl ms-3'>
+          <div className='col-span-4 flex flex-col'>
+            <label className=' text-white font-semibold text-xl ms-3'>
               Patient’s Cholesterol Level:
             </label>
-          <div className='flex w-full gap-2'>
-            <input
-              type='text'
-                className='bg-white h-10 rounded-md w-full'
-                onChange={handleFormChange}
-                name='cholesterol_level'
-                required
-              />
-              <div className='bg-[#15545A] text-white px-6 flex items-end pb-2 text-xs rounded-md'>
-                <span>mg/dL</span>
-              </div>
-            </div>
+            <select
+              className='bg-white h-10 rounded-md'
+              onChange={handleFormChange}
+              required
+              name='cholesterol_level'
+            >
+              <option value='' disabled selected>Select</option>
+              <option value='Low'>Low</option>
+              <option value='High'>High</option>
+            </select>
           </div>
-
-          <div className=' col-span-3 flex flex-col'>
+          <div className='col-span-4 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               Have history of stroke?
             </label>
-            
             <select
               className='bg-white h-10 rounded-md'
               onChange={handleFormChange}
               name='history_of_stroke'
               required
             >
+              <option value='' disabled selected>Select</option>
               <option value='Yes'>Yes</option>
               <option value='No'>No</option>
             </select>
           </div>
-
-          <div className='col-span-3 flex flex-col'>
+          <div className='col-span-4 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               Have history of diabetes?
             </label>
-
             <select
               className='bg-white h-10 rounded-md'
               onChange={handleFormChange}
               name='history_of_diabetes'
               required
             >
+              <option value='' disabled selected>Select</option>
               <option value='Yes'>Yes</option>
               <option value='No'>No</option>
             </select>
           </div>
-
-          <div className=' col-span-5 flex flex-col'>
-            <label className=' text-white font-semibold text-xl ms-3'>
-              Alcohol consumption status:
-            </label>
-
-            <select
-              className='bg-white h-10 rounded-md'
-              onChange={handleFormChange}
-              name='alcohol_consumption_status'
-              required
-            >
-              <option value='Drinker'>Drinker</option>
-              <option value='Non-Drinker'>Non-Drinker</option>
-            </select>
-          </div>
-          <div className=' col-span-2 flex flex-col'>
+          <div className='col-span-4 flex flex-col'>
             <label className=' text-white font-semibold text-xl ms-3'>
               Smoker?
             </label>
-
             <select
               className='bg-white h-10 rounded-md'
               onChange={handleFormChange}
               name='smoker'
               required
             >
-              <option value='Yes'>Yes</option>
-              <option value='No'>No</option>
-            </select>
-          </div>
-          <div className=' col-span-5 flex flex-col'>
-            <label className=' text-white font-semibold text-xl ms-3'>
-              Engage Physical Activities?
-            </label>
-
-            <select
-              className='bg-white h-10 rounded-md'
-              onChange={handleFormChange}
-              name='engage_physical_activities'
-              required
-            >
+              <option value='' disabled selected>Select</option>
               <option value='Yes'>Yes</option>
               <option value='No'>No</option>
             </select>
@@ -304,9 +239,9 @@ const PredictionForm = () => {
         <button
           onClick={() => {
             if (!hasAllValues(details)) {
-              return toast.error('Incomplete Details')
+              return toast.error('Incomplete Details');
             }
-            setModalSave(true)
+            setModalSave(true);
           }}
           type='button'
           className=' bg-[#00717A] rounded-md text-white font-semibold px-6 py-2 text-xl hover:bg-[#239a98]'
@@ -321,7 +256,6 @@ const PredictionForm = () => {
           Enter New Data
         </button>
       </div>
-
       {modalSave && (
         <ModalSave
           setModalSave={setModalSave}

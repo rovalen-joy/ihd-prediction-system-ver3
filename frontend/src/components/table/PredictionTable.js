@@ -3,26 +3,33 @@ import { IoSearch } from 'react-icons/io5';
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { UserAuth } from '../../context/AuthContext';
+import { format } from 'date-fns';
 
 const PredictionTable = () => {
   const [patients, setPatients] = useState([]);
   const [reload, setReload] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { user } = UserAuth();
 
   useEffect(() => {
+    setLoading(true);
     const q = query(
       collection(db, 'patients'),
       where('userid', '==', user.uid ?? ''),
       orderBy('timestamp', 'desc')
     );
-    onSnapshot(q, (querySnapshot) => {
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       setPatients(
         querySnapshot.docs.map((doc) => ({
           id: doc.id,
           data: doc.data(),
+          date: doc.data().timestamp.toDate() 
         }))
       );
+      setLoading(false);
     });
+
+    return () => unsubscribe();
   }, [user, reload]);
 
   const handleSearch = (searchTerm) => {
@@ -85,23 +92,31 @@ const PredictionTable = () => {
                 <th className='font-medium font-sans py-3'>Diabetes History</th>
                 <th className='font-medium font-sans py-3'>Smoker</th>
                 <th className='font-medium font-sans py-3'>Risk Result</th>
+                <th className='font-medium font-sans py-3'>Date</th>
               </tr>
             </thead>
             <tbody>
-              {patients.map((data, i) => (
-                <tr key={i} className='bg-white text-center font-medium'>
-                  <td className='font-medium font-sans py-3'>{data.id}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.lastname}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.firstname}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.sex}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.blood_pressure}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.cholesterol_level}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.history_of_stroke}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.history_of_diabetes}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.smoker}</td>
-                  <td className='font-medium font-sans py-3'>{data.data.risk_result}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan="11" className="text-center">Loading...</td>
                 </tr>
-              ))}
+              ) : (
+                patients.map((data, i) => (
+                  <tr key={i} className='bg-white text-center font-medium'>
+                    <td className='font-medium font-sans py-3'>{data.id}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.lastname}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.firstname}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.sex}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.blood_pressure}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.cholesterol_level}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.history_of_stroke}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.history_of_diabetes}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.smoker}</td>
+                    <td className='font-medium font-sans py-3'>{data.data.risk_result}</td>
+                    <td className='font-medium font-sans py-3'>{format(data.date, 'MM/dd/yyyy')}</td> 
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -1,48 +1,58 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-} from 'firebase/auth'
-import { auth } from '../firebase'
-import { Toaster } from 'react-hot-toast'
+  sendPasswordResetEmail, 
+} from 'firebase/auth';
+import { auth } from '../firebase';
+import { Toaster } from 'react-hot-toast';
 
-const UserContext = createContext()
+const UserContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  const [user, setUser] = useState({})
+  const [user, setUser] = useState(null); // Initialized as null
 
-  //   signup function
+  // Signup function
   const createUser = (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password)
-  }
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
 
+  // Signin function
   const signIn = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password)
-  }
+    return signInWithEmailAndPassword(auth, email, password);
+  };
 
+  // Logout function
   const logout = () => {
-    return signOut(auth)
-  }
+    return signOut(auth);
+  };
 
+  // Reset Password function
+  const resetPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
+
+  // Listen for authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser)
-    })
+      setUser(currentUser);
+    });
     return () => {
-      unsubscribe()
-    }
-  }, [])
+      unsubscribe();
+    };
+  }, []);
 
   return (
-    <UserContext.Provider value={{ createUser, user, logout, signIn }}>
+    <UserContext.Provider value={{ createUser, user, logout, signIn, resetPassword }}>
       {children}
       <Toaster />
     </UserContext.Provider>
-  )
-}
+  );
+};
 
+// Create a hook to use the AuthContext
 export const UserAuth = () => {
-  return useContext(UserContext)
-}
+  return useContext(UserContext);
+};

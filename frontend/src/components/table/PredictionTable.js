@@ -28,6 +28,10 @@ const PredictionTable = () => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [patientIdToDelete, setPatientIdToDelete] = useState(null);
 
+  // **New Pagination State Variables**
+  const [currentPage, setCurrentPage] = useState(1); // Tracks the current page
+  const recordsPerPage = 10; // Number of records per page
+
   const debouncedSetSearchTerm = useMemo(
     () => debounce((term) => setSearchTerm(term), 300),
     []
@@ -74,7 +78,7 @@ const PredictionTable = () => {
       }
     );
 
-    // Cleanup subscription on unmount
+    
     return () => unsubscribe();
   }, [user]);
 
@@ -83,7 +87,7 @@ const PredictionTable = () => {
     const processPatients = () => {
       let results = [...patients];
 
-      // **1. Search Filtering**
+      // **Search Filtering**
       if (searchTerm) {
         const lowercasedTerm = searchTerm.toLowerCase();
 
@@ -140,6 +144,11 @@ const PredictionTable = () => {
     processPatients();
   }, [patients, searchTerm, sortBy]);
 
+  // **Reset to First Page when searchTerm or sortBy changes**
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortBy]);
+
   // **Handle Deletion of a Patient Record with Confirmation Modal**
   const handleDelete = (patientId) => {
     setPatientIdToDelete(patientId);
@@ -169,6 +178,14 @@ const PredictionTable = () => {
     }
   };
 
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentPatients = filteredPatients.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
+  const totalPages = Math.ceil(filteredPatients.length / recordsPerPage);
+
   return (
     <div className="flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-[10rem]">
       {/* Header */}
@@ -189,7 +206,10 @@ const PredictionTable = () => {
               className="h-10 px-3 rounded-3xl w-[20rem] focus-visible:outline-0"
               onChange={(e) => debouncedSetSearchTerm(e.target.value)}
             />
-            <IoSearch className="absolute right-3 top-3 text-[#d0d0d0]" size={20} />
+            <IoSearch
+              className="absolute right-3 top-3 text-[#d0d0d0]"
+              size={20}
+            />
           </div>
 
           {/* Sort Dropdown */}
@@ -215,14 +235,22 @@ const PredictionTable = () => {
                 <th className="font-medium font-sans py-3">Last Name</th>
                 <th className="font-medium font-sans py-3">First Name</th>
                 <th className="font-medium font-sans py-3">Sex</th>
-                <th className="font-medium font-sans py-3">Blood Pressure</th>
-                <th className="font-medium font-sans py-3">Cholesterol Level</th>
-                <th className="font-medium font-sans py-3">Stroke History</th>
-                <th className="font-medium font-sans py-3">Diabetes History</th>
+                <th className="font-medium font-sans py-3">
+                  Blood Pressure
+                </th>
+                <th className="font-medium font-sans py-3">
+                  Cholesterol Level
+                </th>
+                <th className="font-medium font-sans py-3">
+                  Stroke History
+                </th>
+                <th className="font-medium font-sans py-3">
+                  Diabetes History
+                </th>
                 <th className="font-medium font-sans py-3">Smoker</th>
                 <th className="font-medium font-sans py-3">Risk Result</th>
                 <th className="font-medium font-sans py-3">Date</th>
-                <th className="font-medium font-sans py-3">Actions</th> {/* New Actions Column */}
+                <th className="font-medium font-sans py-3">Actions</th> 
               </tr>
             </thead>
             <tbody>
@@ -232,24 +260,45 @@ const PredictionTable = () => {
                     Loading...
                   </td>
                 </tr>
-              ) : filteredPatients.length > 0 ? (
-                filteredPatients.map((data) => (
-                  <tr key={data.id} className="bg-white text-center font-medium">
+              ) : currentPatients.length > 0 ? ( 
+                currentPatients.map((data) => ( 
+                  <tr
+                    key={data.id}
+                    className="bg-white text-center font-medium"
+                  >
                     {/* Patient ID with leading zeros */}
                     <td className="font-medium font-sans py-3">
                       {data.data.patientID
                         ? data.data.patientID.toString().padStart(4, '0')
                         : '----'}
                     </td>
-                    <td className="font-medium font-sans py-3">{data.data.lastname}</td>
-                    <td className="font-medium font-sans py-3">{data.data.firstname}</td>
-                    <td className="font-medium font-sans py-3">{data.data.sex}</td>
-                    <td className="font-medium font-sans py-3">{data.data.blood_pressure}</td>
-                    <td className="font-medium font-sans py-3">{data.data.cholesterol_level}</td>
-                    <td className="font-medium font-sans py-3">{data.data.history_of_stroke}</td>
-                    <td className="font-medium font-sans py-3">{data.data.history_of_diabetes}</td>
-                    <td className="font-medium font-sans py-3">{data.data.smoker}</td>
-                    <td className="font-medium font-sans py-3">{data.data.risk_result}</td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.lastname}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.firstname}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.sex}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.blood_pressure}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.cholesterol_level}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.history_of_stroke}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.history_of_diabetes}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.smoker}
+                    </td>
+                    <td className="font-medium font-sans py-3">
+                      {data.data.risk_result}
+                    </td>
                     <td className="font-medium font-sans py-3">
                       {format(data.date, 'MM/dd/yyyy')}
                     </td>
@@ -276,6 +325,54 @@ const PredictionTable = () => {
             </tbody>
           </table>
         </div>
+
+        {/* **New Pagination Controls** */}
+        {!loading && filteredPatients.length > recordsPerPage && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 mx-1 rounded ${
+                currentPage === 1
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-[#00717A] text-white hover:bg-[#005f61]'
+              }`}
+            >
+              Previous
+            </button>
+
+            {/* Page Numbers */}
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+              (number) => (
+                <button
+                  key={number}
+                  onClick={() => setCurrentPage(number)}
+                  className={`px-3 py-1 mx-1 rounded ${
+                    currentPage === number
+                      ? 'bg-[#005f61] text-white'
+                      : 'bg-[#00717A] text-white hover:bg-[#005f61]'
+                  }`}
+                >
+                  {number}
+                </button>
+              )
+            )}
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 mx-1 rounded ${
+                currentPage === totalPages
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-[#00717A] text-white hover:bg-[#005f61]'
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Confirm Deletion Modal */}
@@ -289,11 +386,17 @@ const PredictionTable = () => {
           {/* Modal content */}
           <div className="bg-white border-2 border-red-500 rounded-lg shadow-lg p-6 z-50">
             <div className="flex items-center">
-              <IoTrash className="h-6 w-6 text-red-600 mr-3" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-red-700">Confirm Deletion</h2>
+              <IoTrash
+                className="h-6 w-6 text-red-600 mr-3"
+                aria-hidden="true"
+              />
+              <h2 className="text-lg font-semibold text-red-700">
+                Confirm Deletion
+              </h2>
             </div>
             <p className="mt-4 text-sm text-gray-700">
-              Are you sure you want to delete this patient record? This action cannot be undone.
+              Are you sure you want to delete this patient record? This action
+              cannot be undone.
             </p>
             <div className="mt-6 flex justify-end space-x-4">
               <button

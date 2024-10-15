@@ -8,6 +8,7 @@ import Prediction from './pages/Prediction';
 import ProtectedRoute from './components/ProtectedRoute';
 import PredictionForm from './components/form/PredictionForm';
 import PredictionTable from './components/table/PredictionTable';
+import PatientDetails from './components/table/PatientDetails'; 
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           >
             <Route path='/prediction-form' element={<PredictionForm />} />
             <Route path='/prediction-table' element={<PredictionTable />} />
+            <Route path='/patient-details/:id' element={<PatientDetails />} /> {/* Added this line */}
           </Route>
         </Routes>
       </AuthContextProvider>

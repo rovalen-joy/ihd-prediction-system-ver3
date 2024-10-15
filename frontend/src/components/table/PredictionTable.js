@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { IoSearch, IoTrash } from 'react-icons/io5';
+import React, { useState, useEffect, useMemo } from 'react';
+import { IoSearch } from 'react-icons/io5';
+import { useNavigate } from 'react-router-dom';
 import {
   collection,
   query,
   orderBy,
   onSnapshot,
   where,
-  doc,
-  deleteDoc,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { UserAuth } from '../../context/AuthContext';
@@ -24,23 +23,11 @@ const PredictionTable = () => {
   const [sortBy, setSortBy] = useState('Date'); // Sort criterion: 'Name' or 'Date'
   const { user } = UserAuth(); // Authenticated user
 
-  // State variables for deletion confirmation modal
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [patientIdToDelete, setPatientIdToDelete] = useState(null);
-
   // Pagination state variables
   const [currentPage, setCurrentPage] = useState(1); // Tracks the current page
   const recordsPerPage = 10; // Number of records per page
 
-  // State Variable for Selected Patient
-  const [selectedPatientId, setSelectedPatientId] = useState(null); // Tracks the selected patient
-
-  // State Variable for Delete Button Position
-  const [deleteButtonPosition, setDeleteButtonPosition] = useState({ top: 0, left: 0 });
-
-  // Refs for rows and table container
-  const tableContainerRef = useRef(null);
-  const rowRefs = useRef({});
+  const navigate = useNavigate();
 
   // Debounced search term setter to optimize performance
   const debouncedSetSearchTerm = useMemo(
@@ -161,44 +148,9 @@ const PredictionTable = () => {
     setCurrentPage(1);
   }, [searchTerm, sortBy]);
 
-  // **Handle Row Selection**
+  // **Handle Row Click to Navigate to Details**
   const handleRowClick = (patientId) => {
-    // Toggle selection
-    setSelectedPatientId((prevId) => (prevId === patientId ? null : patientId));
-  };
-
-  // **Handle Deletion of a Patient Record with Confirmation Modal**
-  const handleDelete = (patientId) => {
-    setPatientIdToDelete(patientId);
-    setShowConfirmDelete(true);
-  };
-
-  const deletePatient = async (patientId) => {
-    try {
-      // Reference to the specific patient document
-      const patientDocRef = doc(db, 'patients', patientId);
-
-      // Delete the document
-      await deleteDoc(patientDocRef);
-
-      toast.success('Patient record deleted successfully.');
-
-      // Remove the deleted patient from the local state
-      setFilteredPatients((prevPatients) =>
-        prevPatients.filter((patient) => patient.id !== patientId)
-      );
-      setPatients((prevPatients) =>
-        prevPatients.filter((patient) => patient.id !== patientId)
-      );
-
-      // Reset selected patient if it was deleted
-      if (selectedPatientId === patientId) {
-        setSelectedPatientId(null);
-      }
-    } catch (error) {
-      console.error('Error deleting patient record:', error);
-      toast.error('Failed to delete patient record.');
-    }
+    navigate(`/patient-details/${patientId}`); // Ensure this route is defined
   };
 
   // **Calculate Paginated Data**
@@ -210,49 +162,8 @@ const PredictionTable = () => {
   );
   const totalPages = Math.ceil(filteredPatients.length / recordsPerPage);
 
-  // ** Update Delete Button Position**
-  useEffect(() => {
-    if (selectedPatientId && rowRefs.current[selectedPatientId]) {
-      const rowElement = rowRefs.current[selectedPatientId];
-      const rect = rowElement.getBoundingClientRect();
-      const containerRect = tableContainerRef.current.getBoundingClientRect();
-
-      setDeleteButtonPosition({
-        top: rect.top - containerRect.top + rect.height / 2, // Center vertically
-        left: rect.width + 20, 
-      });
-    } else {
-     
-      setDeleteButtonPosition({ top: 0, left: 0 });
-    }
-  }, [selectedPatientId, currentPage, currentPatients]);
-
-
-  useEffect(() => {
-    const handlePositionUpdate = () => {
-      if (selectedPatientId && rowRefs.current[selectedPatientId]) {
-        const rowElement = rowRefs.current[selectedPatientId];
-        const rect = rowElement.getBoundingClientRect();
-        const containerRect = tableContainerRef.current.getBoundingClientRect();
-
-        setDeleteButtonPosition({
-          top: rect.top - containerRect.top + rect.height / 2, 
-          left: rect.width + 20, 
-        });
-      }
-    };
-
-    window.addEventListener('resize', handlePositionUpdate);
-    window.addEventListener('scroll', handlePositionUpdate);
-
-    return () => {
-      window.removeEventListener('resize', handlePositionUpdate);
-      window.removeEventListener('scroll', handlePositionUpdate);
-    };
-  }, [selectedPatientId, currentPage, currentPatients]);
-
   return (
-    <div className="flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-10 relative">
+    <div className="flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-10">
       {/* Header */}
       <div className="flex justify-center">
         <h1 className="text-4xl text-[#00717A] font-bold uppercase">
@@ -261,10 +172,7 @@ const PredictionTable = () => {
       </div>
 
       {/* Search and Sort Controls */}
-      <div
-        className="bg-[#00717A] rounded-md px-8 py-8 relative"
-        ref={tableContainerRef}
-      >
+      <div className="bg-[#00717A] rounded-md px-8 py-8">
         <div className="flex justify-between items-center py-6">
           {/* Search Input */}
           <div className="relative">
@@ -299,27 +207,19 @@ const PredictionTable = () => {
 
         {/* Patient Data Table */}
         <div className="overflow-x-auto relative">
-          <table className="w-full overflow-hidden rounded-md">
+          <table className="w-full table-auto overflow-hidden rounded-md">
             <thead>
               <tr className="bg-[#299FA8] text-white">
-                <th className="font-medium font-sans py-3">Patient ID</th>
-                <th className="font-medium font-sans py-3">Last Name</th>
-                <th className="font-medium font-sans py-3">First Name</th>
-                <th className="font-medium font-sans py-3">Sex</th>
-                <th className="font-medium font-sans py-3">Blood Pressure</th>
-                <th className="font-medium font-sans py-3">Cholesterol Level</th>
-                <th className="font-medium font-sans py-3">Stroke History</th>
-                <th className="font-medium font-sans py-3">Diabetes History</th>
-                <th className="font-medium font-sans py-3">Smoker</th>
-                <th className="font-medium font-sans py-3">Risk Result</th>
-                <th className="font-medium font-sans py-3">Date</th>
-                
+                <th className="font-medium font-sans py-3 px-2">Patient ID</th>
+                <th className="font-medium font-sans py-3 px-2">Last Name</th>
+                <th className="font-medium font-sans py-3 px-2">First Name</th>
+                <th className="font-medium font-sans py-3 px-2">Date</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="11" className="text-center py-4">
+                  <td colSpan="4" className="text-center py-4">
                     Loading...
                   </td>
                 </tr>
@@ -327,59 +227,34 @@ const PredictionTable = () => {
                 currentPatients.map((data) => (
                   <tr
                     key={data.id}
-                    ref={(el) => (rowRefs.current[data.id] = el)} // Added ref to each row
-                    className={`bg-white text-center font-medium cursor-pointer ${
-                      selectedPatientId === data.id
-                        ? 'bg-green-100' // Highlighted background for selected row
-                        : 'hover:bg-gray-100' // Hover effect for non-selected rows
-                    } transition-colors duration-200`}
+                    className={`bg-white text-center font-medium hover:bg-gray-100 cursor-pointer transition-colors duration-200`}
                     onClick={() => handleRowClick(data.id)}
-                    aria-selected={selectedPatientId === data.id}
+                    aria-selected={false}
                     role="row"
                   >
-                    {/* Patient ID with leading zeros */}
-                    <td className="font-medium font-sans py-3">
+                    {/* Patient ID */}
+                    <td className="font-medium font-sans py-3 px-2">
                       {data.data.patientID
                         ? data.data.patientID.toString().padStart(4, '0')
                         : '----'}
                     </td>
                     {/* Last Name */}
-                    <td className="font-medium font-sans py-3">
+                    <td className="font-medium font-sans py-3 px-2">
                       {data.data.lastname}
                     </td>
-                    <td className="font-medium font-sans py-3">
+                    {/* First Name */}
+                    <td className="font-medium font-sans py-3 px-2">
                       {data.data.firstname}
                     </td>
-                    <td className="font-medium font-sans py-3">
-                      {data.data.sex}
-                    </td>
-                    <td className="font-medium font-sans py-3">
-                      {data.data.blood_pressure}
-                    </td>
-                    <td className="font-medium font-sans py-3">
-                      {data.data.cholesterol_level}
-                    </td>
-                    <td className="font-medium font-sans py-3">
-                      {data.data.history_of_stroke}
-                    </td>
-                    <td className="font-medium font-sans py-3">
-                      {data.data.history_of_diabetes}
-                    </td>
-                    <td className="font-medium font-sans py-3">
-                      {data.data.smoker}
-                    </td>
-                    <td className="font-medium font-sans py-3">
-                      {data.data.risk_result}
-                    </td>
-                    <td className="font-medium font-sans py-3">
+                    {/* Date */}
+                    <td className="font-medium font-sans py-3 px-2">
                       {format(data.date, 'MM/dd/yyyy')}
                     </td>
-                    {/* Removed Actions Cell */}
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="11" className="text-center py-4">
+                  <td colSpan="4" className="text-center py-4">
                     No records found.
                   </td>
                 </tr>
@@ -438,77 +313,7 @@ const PredictionTable = () => {
             </button>
           </div>
         )}
-
-        {/* Trashcan Icon */}
-        {selectedPatientId && currentPatients.some(p => p.id === selectedPatientId) && (
-          <button
-            onClick={() => handleDelete(selectedPatientId)}
-            className="absolute px-2 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-lg transition-opacity duration-200"
-            style={{
-              top: deleteButtonPosition.top,
-              left: deleteButtonPosition.left,
-              transform: 'translateY(-50%)', // Center vertically relative to the row
-            }}
-            title="Delete Selected Patient"
-            aria-label="Delete Selected Patient"
-          >
-            <IoTrash size={20} />
-          </button>
-        )}
       </div>
-
-      {/* Confirm Deletion Modal */}
-      {showConfirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Background overlay */}
-          <div
-            className="absolute inset-0 bg-black opacity-50"
-            onClick={() => setShowConfirmDelete(false)}
-            aria-hidden="true"
-          ></div>
-          {/* Modal content */}
-          <div
-            className="bg-white border-2 border-red-500 rounded-lg shadow-lg p-6 z-50"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-confirmation-title"
-          >
-            <div className="flex items-center">
-              <IoTrash
-                className="h-6 w-6 text-red-600 mr-3"
-                aria-hidden="true"
-              />
-              <h2
-                id="delete-confirmation-title"
-                className="text-lg font-semibold text-red-700"
-              >
-                Confirm Deletion
-              </h2>
-            </div>
-            <p className="mt-4 text-sm text-gray-700">
-              Are you sure you want to delete this patient record? This action
-              cannot be undone.
-            </p>
-            <div className="mt-6 flex justify-end space-x-4">
-              <button
-                onClick={() => setShowConfirmDelete(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  deletePatient(patientIdToDelete);
-                  setShowConfirmDelete(false);
-                }}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

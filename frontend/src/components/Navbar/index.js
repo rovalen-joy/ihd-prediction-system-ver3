@@ -23,7 +23,7 @@ const NavigationBar = () => {
           }
           to={'/prediction-table'}
         >
-          Results History
+          Patients Record
         </NavLink>
         <NavLink
           className={({ isActive }) =>

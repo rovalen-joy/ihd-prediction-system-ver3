@@ -4,13 +4,12 @@ import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase'; 
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { IoArrowBack, IoTrash } from 'react-icons/io5'; // Importing arrow and trash icons
 
 const PatientDetails = () => {
   const { id } = useParams(); // Retrieve patient ID from URL
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // For programmatic navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -19,7 +18,7 @@ const PatientDetails = () => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          console.log('Patient Data:', docSnap.data()); // Debugging line
+          console.log('Patient Data:', docSnap.data()); 
           setPatient({ id: docSnap.id, data: docSnap.data() });
         } else {
           console.log('No such document!');
@@ -36,13 +35,61 @@ const PatientDetails = () => {
     fetchPatient();
   }, [id]);
 
+  // **Custom Confirmation Toast Function**
+  const confirmDelete = () => {
+    return new Promise((resolve) => {
+      toast.custom((t) => (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 min-h-screen pointer-events-none"
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="bg-white shadow-lg rounded-lg p-8 border-4 border-red-500 w-11/12 max-w-md">
+            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+              Confirm Deletion
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete this patient record? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  resolve(false);
+                  toast.dismiss(t.id);
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+                aria-label="Cancel Deletion"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  resolve(true);
+                  toast.dismiss(t.id);
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+                aria-label="Confirm Deletion"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ), {
+        duration: Infinity, 
+        
+      });
+    });
+  };
+
   // **Handle Deletion from PatientDetails**
   const handleDelete = async () => {
-    const confirmDeletion = window.confirm(
-      'Are you sure you want to delete this patient record? This action cannot be undone.'
-    );
-    if (!confirmDeletion) return;
+    // Show confirmation toast and wait for user's response
+    const isConfirmed = await confirmDelete();
 
+    if (!isConfirmed) return; // User canceled the deletion
+
+    // Proceed with deletion
     try {
       const patientDocRef = doc(db, 'patients', patient.id);
       await deleteDoc(patientDocRef);
@@ -68,10 +115,10 @@ const PatientDetails = () => {
         <p className="text-xl">No patient data available.</p>
         <button
           onClick={() => navigate('/prediction-table')}
-          className="mt-4 flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
+          className="mt-4 px-12 py-6 bg-[#00717a] text-white rounded-md hover:bg-[#005f61] focus:outline-none text-xl"
           aria-label="Go Back to Table"
         >
-          <IoArrowBack className="mr-2" /> Go Back to Table
+          Back
         </button>
       </div>
     );
@@ -80,22 +127,16 @@ const PatientDetails = () => {
   const { data } = patient;
 
   return (
-    <div className="flex justify-center items-start p-8">
-      <div className="max-w-2xl w-full bg-white shadow-md rounded-lg p-6">
-        {/* Header with Delete Button */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Patient Details</h2>
-          <button
-            onClick={handleDelete}
-            className="text-red-600 hover:text-red-800 focus:outline-none"
-            aria-label="Delete Patient"
-          >
-            <IoTrash size={24} />
-          </button>
-        </div>
+    <div className="flex flex-col items-center p-4 mt-4 relative">
+      {/* **New Text Above the Box** */}
+      <h1 className="text-3xl font-bold mb-6 text-[#00717a]">
+        Patient Details
+      </h1>
 
+      {/* Patient Details Box */}
+      <div className="max-w-4xl w-full bg-white shadow-md rounded-lg p-8 border-4 border-[#299FA8]">
         {/* Patient Information */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-6 text-lg">
           <div>
             <strong>Patient ID:</strong> {data.patientID.toString().padStart(4, '0')}
           </div>
@@ -133,14 +174,26 @@ const PatientDetails = () => {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Back to Table Button */}
+      {/* Action Buttons */}
+      <div className="w-full max-w-4xl flex justify-between mt-8">
+        {/* Back Button */}
         <button
           onClick={() => navigate('/prediction-table')}
-          className="mt-6 inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
-          aria-label="Back to Table"
+          className="flex items-center justify-center px-12 py-6 bg-[#00717a] text-white rounded-md hover:bg-[#005f61] focus:outline-none text-xl"
+          aria-label="Back"
         >
-          <IoArrowBack className="mr-2" /> Back to Table
+          Back
+        </button>
+
+        {/* Delete Button */}
+        <button
+          onClick={handleDelete}
+          className="flex items-center justify-center px-12 py-6 bg-[#DA4B4B] text-white rounded-md hover:bg-[#b33a3a] focus:outline-none text-xl"
+          aria-label="Delete Patient"
+        >
+          Delete
         </button>
       </div>
     </div>

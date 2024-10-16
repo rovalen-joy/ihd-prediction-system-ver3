@@ -167,7 +167,7 @@ const PredictionTable = () => {
       {/* Header */}
       <div className="flex justify-center">
         <h1 className="text-4xl text-[#00717A] font-bold uppercase">
-          ISCHEMIC HEART DISEASE PREDICTION
+          Patients' Records
         </h1>
       </div>
 
@@ -179,7 +179,7 @@ const PredictionTable = () => {
             <input
               type="text"
               placeholder="Search patient or patient ID"
-              className="h-10 px-3 rounded-3xl w-80 focus-visible:outline-0"
+              className="h-10 px-3 rounded-3xl w-80 focus-visible:outline-0 text-lg"
               onChange={(e) => debouncedSetSearchTerm(e.target.value)}
               aria-label="Search patients by name or ID"
             />
@@ -191,10 +191,10 @@ const PredictionTable = () => {
           </div>
 
           {/* Sort Dropdown */}
-          <div className="h-10 px-3 rounded-3xl w-40 bg-white flex items-center justify-center gap-1">
-            <span className="text-gray-800">View By:</span>
+          <div className="h-10 px-3 rounded-3xl w-50 bg-white flex items-center justify-center gap-1">
+            <span className="text-lg text-gray-800">View By:</span>
             <select
-              className="focus-visible:outline-0"
+              className="focus-visible:outline-0 text-lg"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               aria-label="Sort patients by"
@@ -210,16 +210,17 @@ const PredictionTable = () => {
           <table className="w-full table-auto overflow-hidden rounded-md">
             <thead>
               <tr className="bg-[#299FA8] text-white">
-                <th className="font-medium font-sans py-3 px-2">Patient ID</th>
-                <th className="font-medium font-sans py-3 px-2">Last Name</th>
-                <th className="font-medium font-sans py-3 px-2">First Name</th>
-                <th className="font-medium font-sans py-3 px-2">Date</th>
+                <th className="font-medium font-sans text-xl py-3 px-2">Patient ID</th>
+                <th className="font-medium font-sans text-xl py-3 px-2">Last Name</th>
+                <th className="font-medium font-sans text-xl py-3 px-2">First Name</th>
+                <th className="font-medium font-sans text-xl py-3 px-2">Date</th>
+
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-4">
+                  <td colSpan="4" className="text-center text-lg py-4">
                     Loading...
                   </td>
                 </tr>
@@ -233,28 +234,28 @@ const PredictionTable = () => {
                     role="row"
                   >
                     {/* Patient ID */}
-                    <td className="font-medium font-sans py-3 px-2">
+                    <td className="font-medium font-sans text-lg py-3 px-2">
                       {data.data.patientID
                         ? data.data.patientID.toString().padStart(4, '0')
                         : '----'}
                     </td>
                     {/* Last Name */}
-                    <td className="font-medium font-sans py-3 px-2">
+                    <td className="font-medium font-sans text-lg py-3 px-2">
                       {data.data.lastname}
                     </td>
                     {/* First Name */}
-                    <td className="font-medium font-sans py-3 px-2">
+                    <td className="font-medium font-sans text-lg py-3 px-2">
                       {data.data.firstname}
                     </td>
                     {/* Date */}
-                    <td className="font-medium font-sans py-3 px-2">
+                    <td className="font-medium font-sans text-lg py-3 px-2">
                       {format(data.date, 'MM/dd/yyyy')}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-4">
+                  <td colSpan="4" className="text-center text-lg py-4">
                     No records found.
                   </td>
                 </tr>
@@ -269,7 +270,7 @@ const PredictionTable = () => {
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className={`px-3 py-1 mx-1 rounded ${
+              className={`px-3 py-1 mx-1 rounded text-lg ${
                 currentPage === 1
                   ? 'bg-gray-300 cursor-not-allowed'
                   : 'bg-[#00717A] text-white hover:bg-[#005f61]'
@@ -285,7 +286,7 @@ const PredictionTable = () => {
                 <button
                   key={number}
                   onClick={() => setCurrentPage(number)}
-                  className={`px-3 py-1 mx-1 rounded ${
+                  className={`px-3 py-1 mx-1 rounded text-lg ${
                     currentPage === number
                       ? 'bg-[#005f61] text-white'
                       : 'bg-[#00717A] text-white hover:bg-[#005f61]'
@@ -302,7 +303,7 @@ const PredictionTable = () => {
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
               disabled={currentPage === totalPages}
-              className={`px-3 py-1 mx-1 rounded ${
+              className={`px-3 py-1 mx-1 rounded text-lg ${
                 currentPage === totalPages
                   ? 'bg-gray-300 cursor-not-allowed'
                   : 'bg-[#00717A] text-white hover:bg-[#005f61]'

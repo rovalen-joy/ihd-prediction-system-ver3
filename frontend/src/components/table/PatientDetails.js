@@ -127,16 +127,16 @@ const PatientDetails = () => {
   const { data } = patient;
 
   return (
-    <div className="flex flex-col items-center p-4 mt-4 relative">
+    <div className="flex flex-col items-center p-4 mt-8 relative">
       {/* **New Text Above the Box** */}
-      <h1 className="text-3xl font-bold mb-6 text-[#00717a]">
+      <h1 className="text-3xl font-bold mb-10 text-[#00717a]">
         Patient Details
       </h1>
 
       {/* Patient Details Box */}
-      <div className="max-w-4xl w-full bg-white shadow-md rounded-lg p-8 border-4 border-[#299FA8]">
+      <div className="max-w-4xl w-full bg-white shadow-md rounded-lg p-8 border-4 border-[#299FA8] mb-14">
         {/* Patient Information */}
-        <div className="grid grid-cols-1 gap-6 text-lg">
+        <div className="grid grid-cols-1 gap-5 text-2xl">
           <div>
             <strong>Patient ID:</strong> {data.patientID.toString().padStart(4, '0')}
           </div>
@@ -177,7 +177,7 @@ const PatientDetails = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="w-full max-w-4xl flex justify-between mt-8">
+      <div className="w-full max-w-4xl flex justify-between mt-18">
         {/* Back Button */}
         <button
           onClick={() => navigate('/prediction-table')}

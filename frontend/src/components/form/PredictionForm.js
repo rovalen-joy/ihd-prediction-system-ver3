@@ -83,7 +83,12 @@ const PredictionForm = () => {
       }
     } catch (error) {
       console.error('Error fetching counter:', error);
-      toast.error('Failed to initialize patient counter.');
+      toast.error('Failed to initialize patient counter.', {
+        style: {
+          fontSize: '1rem',     
+          padding: '0.75rem',   
+        },
+      });
     }
   }, [user]);
 
@@ -122,10 +127,20 @@ const PredictionForm = () => {
       console.log('Received response from backend:', response.data);
       setResults(response.data.prediction);
       setShowResults(true);
-      toast.success('Prediction completed.');
+      toast.success('Prediction completed.', {
+        style: {
+          fontSize: '1rem',     
+          padding: '0.75rem',   
+        },
+      });
     } catch (error) {
       console.error('There was an error making the request:', error);
-      toast.error('Failed to fetch prediction results.');
+      toast.error('Failed to fetch prediction results.', {
+        style: {
+          fontSize: '1rem',    
+          padding: '0.75rem',   
+        },
+      });
     }
   };
 
@@ -134,15 +149,31 @@ const PredictionForm = () => {
     try {
       if (!hasAllValues(details)) {
         console.log('Incomplete Details:', details);
-        return toast.error('Incomplete Details');
+        return toast.error('Incomplete Details', {
+          style: {
+            fontSize: '1rem',   
+            padding: '0.75rem',   
+          },
+        });
       }
 
       if (!user) {
         console.log('User is not authenticated.');
-        return toast.error('User is not authenticated.');
+        return toast.error('User is not authenticated.', {
+          style: {
+            fontSize: '1rem',     
+            padding: '0.75rem',   
+          },
+        });
       }
 
-      toast.loading('Saving data...', { id: 'loadingResults' });
+      toast.loading('Saving data...', {
+        id: 'loadingResults',
+        style: {
+          fontSize: '1rem',     
+          padding: '0.75rem',   
+        },
+      });
 
       const counterDocRef = doc(db, 'counters', user.uid); // Per-user counter
       let newPatientID;
@@ -177,14 +208,24 @@ const PredictionForm = () => {
       await addDoc(collection(db, 'patients'), patientData);
 
       toast.dismiss('loadingResults');
-      toast.success('Saved Successfully');
+      toast.success('Saved Successfully', {
+        style: {
+          fontSize: '1rem',     
+          padding: '0.75rem',   
+        },
+      });
 
       // Update the PatientID state for the next entry
       setPatientID(newPatientID); // Set to newPatientID without adding 1
       handleResetForm();
     } catch (err) {
       console.error('Error in handleSaveData:', err);
-      toast.error(err.message || 'Failed to save patient data.');
+      toast.error(err.message || 'Failed to save patient data.', {
+        style: {
+          fontSize: '1rem',     
+          padding: '0.75rem',   
+        },
+      });
       toast.dismiss('loadingResults');
     }
   };
@@ -208,7 +249,7 @@ const PredictionForm = () => {
     return (
       <div className='flex justify-center items-center h-screen'>
         <div className='text-center'>
-          <h2 className='text-2xl font-bold text-gray-700'>
+          <h2 className='text-lg font-bold text-gray-700'>
             Please log in to use the Prediction Form.
           </h2>
         </div>
@@ -217,40 +258,40 @@ const PredictionForm = () => {
   }
 
   return (
-    <div className='flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-8 md:px-20 lg:px-40'>
+    <div className='flex justify-center flex-col gap-4 mt-2 pt-4 pb-8 px-4 md:px-10 lg:px-20'>
       {/* Header */}
       <div className='flex justify-center'>
-        <h1 className='text-4xl text-[#00717A] font-bold uppercase'>
+        <h1 className='text-lg md:text-xl lg:text-2xl text-[#00717A] font-bold uppercase'>
           ISCHEMIC HEART DISEASE PREDICTION
         </h1>
       </div>
 
       {/* PatientID Display */}
-      <div className='bg-gradient-to-r from-[#2DB4C0] to-[#145459] p-2 rounded-md text-end text-lg px-6'>
-        <span className='text-white font-medium text-2xl'>
+      <div className='bg-gradient-to-r from-[#2DB4C0] to-[#145459] p-2 rounded-sm text-end px-4 mt-2'>
+        <span className='text-white font-medium text-sm md:text-base'>
           Prediction for Patient {formattedPatientID}
         </span>
       </div>
 
       {/* Prediction Form */}
-      <div className='bg-[#00717A] rounded-md px-6 py-8'>
-        <span className='text-white font-bold text-2xl'>
+      <div className='bg-[#00717A] rounded-sm px-4 py-6'>
+        <span className='text-white font-bold text-sm md:text-base'>
           Enter Attributes for Prediction
         </span>
         <hr className='bg-white h-px my-2' />
         <form
           ref={formRef}
-          className='mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+          className='mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
           onSubmit={handleSubmit}
         >
           {/* Last Name */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>
               Last Name:
             </label>
             <input
               type='text'
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               name='lastname'
               onChange={handleFormChange}
               required
@@ -260,12 +301,12 @@ const PredictionForm = () => {
 
           {/* First Name */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>
               First Name:
             </label>
             <input
               type='text'
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               name='firstname'
               onChange={handleFormChange}
               required
@@ -275,9 +316,9 @@ const PredictionForm = () => {
 
           {/* Sex */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>Sex:</label>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>Sex:</label>
             <select
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               onChange={handleFormChange}
               required
               name='sex'
@@ -293,11 +334,11 @@ const PredictionForm = () => {
 
           {/* Blood Pressure */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>
               Patient’s Blood Pressure:
             </label>
             <select
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               onChange={handleFormChange}
               required
               name='blood_pressure'
@@ -313,11 +354,11 @@ const PredictionForm = () => {
 
           {/* Cholesterol Level */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>
               Patient’s Cholesterol Level:
             </label>
             <select
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               onChange={handleFormChange}
               required
               name='cholesterol_level'
@@ -333,11 +374,11 @@ const PredictionForm = () => {
 
           {/* History of Stroke */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>
               Have history of stroke?
             </label>
             <select
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               onChange={handleFormChange}
               name='history_of_stroke'
               required
@@ -353,11 +394,11 @@ const PredictionForm = () => {
 
           {/* History of Diabetes */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>
               Have history of diabetes?
             </label>
             <select
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               onChange={handleFormChange}
               name='history_of_diabetes'
               required
@@ -373,11 +414,11 @@ const PredictionForm = () => {
 
           {/* Smoker */}
           <div className='flex flex-col'>
-            <label className='text-white font-semibold text-2xl mb-2'>
+            <label className='text-white font-semibold text-sm md:text-base mb-1'>
               Smoker?
             </label>
             <select
-              className='bg-white h-10 rounded-md px-3 text-xl'
+              className='bg-white h-10 rounded-sm px-2 text-sm'
               onChange={handleFormChange}
               name='smoker'
               required
@@ -392,10 +433,11 @@ const PredictionForm = () => {
           </div>
 
           {/* Submit Button */}
-          <div className='col-span-1 md:col-span-2 lg:col-span-3 flex justify-center mt-6'>
+          <div className='flex justify-center mt-4 md:col-span-2 lg:col-span-3'>
             <button
               type='submit'
-              className='w-full md:w-auto border-4 border-white text-white hover:bg-[#239a98] text-2xl py-2 bg-[#042B2F] rounded-full font-semibold px-8'
+              className='w-full md:w-auto border-2 border-white text-white hover:bg-[#239a98] text-sm py-2 bg-[#042B2F] rounded-full font-semibold px-4 focus:outline-none focus:ring-2 focus:ring-[#005f61]'
+              aria-label="Run Prediction"
             >
               Run Results
             </button>
@@ -405,33 +447,40 @@ const PredictionForm = () => {
 
       {/* Prediction Results */}
       {showResults && (
-        <div className='bg-[#00717A] rounded-md px-6 py-8'>
-          <span className='text-white font-bold text-2xl'>Results</span>
-          <hr className='bg-white h-px my-4' />
-          <span className='text-white font-medium text-xl'>
+        <div className='bg-[#00717A] rounded-sm px-4 py-6'>
+          <span className='text-white font-bold text-sm md:text-base'>Results</span>
+          <hr className='bg-white h-px my-2' />
+          <span className='text-white font-medium text-sm md:text-base'>
             The patient is {results} for Ischemic Heart Disease.
           </span>
         </div>
       )}
 
       {/* Action Buttons */}
-      <div className='flex justify-end gap-3 mt-4'>
+      <div className='flex justify-end gap-2 mt-4'>
         <button
           onClick={() => {
             if (!hasAllValues(details)) {
-              return toast.error('Incomplete Details');
+              return toast.error('Incomplete Details', {
+                style: {
+                  fontSize: '1rem',    // 16px
+                  padding: '0.75rem',  // 12px
+                },
+              });
             }
             setModalSave(true);
           }}
           type='button'
-          className='bg-[#00717A] rounded-md text-white font-semibold px-6 py-2 text-2xl hover:bg-[#239a98]'
+          className='bg-[#00717A] rounded-sm text-white font-semibold px-4 py-2 text-sm hover:bg-[#239a98] focus:outline-none focus:ring-2 focus:ring-[#005f61]'
+          aria-label="Save Prediction"
         >
           Save
         </button>
         <button
           onClick={() => setModalNew(true)}
           type='button'
-          className='bg-[#00717A] rounded-md text-white font-semibold px-6 py-2 text-2xl hover:bg-[#239a98]'
+          className='bg-[#00717A] rounded-sm text-white font-semibold px-4 py-2 text-sm hover:bg-[#239a98] focus:outline-none focus:ring-2 focus:ring-[#005f61]'
+          aria-label="Enter New Data"
         >
           Enter New Data
         </button>

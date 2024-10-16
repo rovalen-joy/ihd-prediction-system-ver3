@@ -137,7 +137,7 @@ const Login = () => {
             Login
           </button>
         </form>
-        <div className='text-xs flex flex-col items-center'>
+        <div className='text-sm flex flex-col items-center'>
           <span>
             Don’t have an account?{' '}
             <span

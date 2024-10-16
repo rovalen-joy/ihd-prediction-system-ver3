@@ -196,7 +196,7 @@ const SignUp = () => {
             Sign Up
           </button>
         </form>
-        <div className='text-xs flex gap-1'>
+        <div className='text-sm flex gap-1'>
           Already have an account?
           <span
             onClick={handleLogin}

@@ -30,7 +30,7 @@ function App() {
           >
             <Route path='/prediction-form' element={<PredictionForm />} />
             <Route path='/prediction-table' element={<PredictionTable />} />
-            <Route path='/patient-details/:id' element={<PatientDetails />} /> {/* Added this line */}
+            <Route path='/patient-details/:id' element={<PatientDetails />} /> 
           </Route>
         </Routes>
       </AuthContextProvider>

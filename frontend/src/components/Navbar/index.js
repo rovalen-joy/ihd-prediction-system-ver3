@@ -43,7 +43,7 @@ const NavigationBar = () => {
   return (
     <>
       {/* Navbar */}
-      <nav className='bg-[#00717A] flex justify-between items-center py-2 px-4 shadow-sm'>
+      <nav className='bg-[#00717A] flex justify-between items-center py-4 px-4 shadow-sm'>
         {/* Hamburger Menu */}
         <button
           onClick={toggleSidebar}

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react'; 
 import axios from 'axios';
 import ModalSave from '../Modal/ModalSave';
 import ModalNew from '../Modal/ModalNew';
@@ -7,11 +7,10 @@ import {
   collection,
   addDoc,
   Timestamp,
-  doc,
-  runTransaction,
-  getDoc,
-  setDoc,
-} from 'firebase/firestore';
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore'; 
 import toast from 'react-hot-toast';
 import { UserAuth } from '../../context/AuthContext';
 
@@ -54,49 +53,43 @@ const PredictionForm = () => {
   const [details, setDetails] = useState(defaultDetails);
   const [showResults, setShowResults] = useState(false);
 
-  // PatientID state
-  const [patientID, setPatientID] = useState(null);
-
   // Reference to the form for resetting
   const formRef = useRef(null);
 
-  // Fetch or initialize the patient counter for the authenticated user
-  const fetchPatientId = useCallback(async () => {
+  // Function to find existing patient by name
+  const findExistingPatient = useCallback(async () => {
     try {
       if (!user) {
         console.log('No authenticated user found.');
-        return;
+        return null;
       }
 
-      console.log(`Fetching counter for UID: ${user.uid}`);
-      const counterDocRef = doc(db, 'counters', user.uid); // Per-user counter
-      const counterDoc = await getDoc(counterDocRef);
-      if (counterDoc.exists()) {
-        const current = counterDoc.data().current || 0;
-        console.log(`Current counter value: ${current}`);
-        setPatientID(current + 1);
-      } else {
-        // Initialize the counter for the user if it doesn't exist
-        console.log('Counter does not exist. Initializing...');
-        await setDoc(counterDocRef, { current: 0 }); // Initialize to 0
-        setPatientID(1); // First patient ID
+      const patientsRef = collection(db, 'patients');
+      const q = query(
+        patientsRef,
+        where('userid', '==', user.uid),
+        where('firstname', '==', details.firstname),
+        where('lastname', '==', details.lastname)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        // Assuming firstname and lastname are unique per user
+        const patientDoc = querySnapshot.docs[0];
+        return patientDoc.id;
       }
+      return null;
     } catch (error) {
-      console.error('Error fetching counter:', error);
-      toast.error('Failed to initialize patient counter.', {
+      console.error('Error finding existing patient:', error);
+      toast.error('Failed to find existing patient.', {
         style: {
-          fontSize: '1rem',     
-          padding: '0.75rem',   
+          fontSize: '1rem',
+          padding: '0.75rem',
         },
       });
+      return null;
     }
-  }, [user]);
-
-  useEffect(() => {
-    if (user) {
-      fetchPatientId();
-    }
-  }, [user, fetchPatientId]);
+  }, [user, details.firstname, details.lastname]);
 
   // Handle form input changes
   const handleFormChange = (e) => {
@@ -129,16 +122,16 @@ const PredictionForm = () => {
       setShowResults(true);
       toast.success('Prediction completed.', {
         style: {
-          fontSize: '1rem',     
-          padding: '0.75rem',   
+          fontSize: '1rem',
+          padding: '0.75rem',
         },
       });
     } catch (error) {
       console.error('There was an error making the request:', error);
       toast.error('Failed to fetch prediction results.', {
         style: {
-          fontSize: '1rem',    
-          padding: '0.75rem',   
+          fontSize: '1rem',
+          padding: '0.75rem',
         },
       });
     }
@@ -151,8 +144,8 @@ const PredictionForm = () => {
         console.log('Incomplete Details:', details);
         return toast.error('Incomplete Details', {
           style: {
-            fontSize: '1rem',   
-            padding: '0.75rem',   
+            fontSize: '1rem',
+            padding: '0.75rem',
           },
         });
       }
@@ -161,8 +154,8 @@ const PredictionForm = () => {
         console.log('User is not authenticated.');
         return toast.error('User is not authenticated.', {
           style: {
-            fontSize: '1rem',     
-            padding: '0.75rem',   
+            fontSize: '1rem',
+            padding: '0.75rem',
           },
         });
       }
@@ -170,60 +163,55 @@ const PredictionForm = () => {
       toast.loading('Saving data...', {
         id: 'loadingResults',
         style: {
-          fontSize: '1rem',     
-          padding: '0.75rem',   
+          fontSize: '1rem',
+          padding: '0.75rem',
         },
       });
 
-      const counterDocRef = doc(db, 'counters', user.uid); // Per-user counter
-      let newPatientID;
+      // Check if patient exists
+      let patientId = await findExistingPatient();
 
-      console.log(
-        `Running transaction to increment counter for UID: ${user.uid}`
-      );
+      if (!patientId) {
+        // If patient does not exist, create a new patient document
+        const patientsRef = collection(db, 'patients');
+        const newPatientRef = await addDoc(patientsRef, {
+          firstname: details.firstname,
+          lastname: details.lastname,
+          userid: user.uid,
+        });
+        patientId = newPatientRef.id;
+        console.log('Created new patient with ID:', patientId);
+      } else {
+        console.log('Found existing patient with ID:', patientId);
+      }
 
-      // Run a transaction to increment the counter atomically
-      await runTransaction(db, async (transaction) => {
-        const counterDocSnap = await transaction.get(counterDocRef);
-        if (!counterDocSnap.exists()) {
-          throw new Error('Counter document does not exist!');
-        }
-        const current = counterDocSnap.data().current || 0;
-        newPatientID = current + 1;
-        console.log(`Current counter: ${current}, newPatientID: ${newPatientID}`);
-        transaction.update(counterDocRef, { current: newPatientID });
-      });
-
-      // Prepare patient data
-      const patientData = {
+      // Prepare record data
+      const recordData = {
         ...details,
         timestamp: Timestamp.now(),
-        userid: user.uid,
         risk_result: results,
-        patientID: newPatientID,
       };
-      console.log('Saving patient data:', patientData);
+      console.log('Saving record data:', recordData);
 
-      // Save the patient data with the new PatientID
-      await addDoc(collection(db, 'patients'), patientData);
+      // Save the record in the 'records' subcollection
+      const recordsRef = collection(db, 'patients', patientId, 'records');
+      await addDoc(recordsRef, recordData);
 
       toast.dismiss('loadingResults');
       toast.success('Saved Successfully', {
         style: {
-          fontSize: '1rem',     
-          padding: '0.75rem',   
+          fontSize: '1rem',
+          padding: '0.75rem',
         },
       });
 
-      // Update the PatientID state for the next entry
-      setPatientID(newPatientID); // Set to newPatientID without adding 1
       handleResetForm();
     } catch (err) {
       console.error('Error in handleSaveData:', err);
       toast.error(err.message || 'Failed to save patient data.', {
         style: {
-          fontSize: '1rem',     
-          padding: '0.75rem',   
+          fontSize: '1rem',
+          padding: '0.75rem',
         },
       });
       toast.dismiss('loadingResults');
@@ -238,11 +226,6 @@ const PredictionForm = () => {
     setDetails(defaultDetails);
     setShowResults(false);
   };
-
-  // Format PatientID with leading zeros (e.g., 0001)
-  const formattedPatientID = patientID
-    ? patientID.toString().padStart(4, '0')
-    : '----';
 
   // If the user is not authenticated, prompt to log in
   if (!user) {
@@ -264,13 +247,6 @@ const PredictionForm = () => {
         <h1 className='text-lg md:text-xl lg:text-2xl text-[#00717A] font-bold uppercase'>
           ISCHEMIC HEART DISEASE PREDICTION
         </h1>
-      </div>
-
-      {/* PatientID Display */}
-      <div className='bg-gradient-to-r from-[#2DB4C0] to-[#145459] p-2 rounded-sm text-end px-4 mt-2'>
-        <span className='text-white font-medium text-sm md:text-base'>
-          Prediction for Patient {formattedPatientID}
-        </span>
       </div>
 
       {/* Prediction Form */}

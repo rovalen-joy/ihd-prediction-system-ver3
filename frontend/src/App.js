@@ -10,13 +10,14 @@ import PredictionTable from './components/table/PredictionTable';
 import PatientDetails from './components/table/PatientDetails'; 
 import Layout from './components/Layout/Layout';
 import AboutUs from './components/AboutUs/AboutUs'; 
+import HomePage from './components/HomePage/HomePage'; 
 
 function App() {
   return (
     <Router>
       <AuthContextProvider>
         <Routes>
-          {/* Public Routes  */}
+          {/* Public Routes */}
           <Route path='/' element={<Login />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/forgot-password' element={<ForgotPassword />} /> 
@@ -27,12 +28,13 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }>
+            <Route path='/home' element={<HomePage />} />
             <Route path='/prediction-form' element={<PredictionForm />} />
             <Route path='/prediction-table' element={<PredictionTable />} />
             <Route path='/about-us' element={<AboutUs />} /> 
           </Route>
 
-          {/* PatientDetails  */}
+          {/* PatientDetails */}
           <Route path='/patient-details/:id' element={<PatientDetails />} /> 
         </Routes>
       </AuthContextProvider>

@@ -1,0 +1,114 @@
+/* HomePage.css */
+.landing-page-container {
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('../assets/hero-bg.jpg') no-repeat center center/cover;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+  }
+  
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  
+  .hero-description {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+  }
+  
+  .hero-buttons .btn-primary,
+  .hero-buttons .btn-secondary {
+    padding: 12px 30px;
+    margin: 0 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .btn-primary {
+    background-color: #05747F;
+    color: white;
+  }
+  
+  .btn-secondary {
+    background-color: white;
+    color: #05747F;
+    border: 1px solid #05747F;
+  }
+  
+  .features-section {
+    padding: 50px 20px;
+    background-color: #f9f9f9;
+    text-align: center;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+  }
+  
+  .feature-item {
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+  }
+  
+  .how-it-works-section {
+    padding: 50px 20px;
+    text-align: center;
+  }
+  
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+  }
+  
+  .step-item {
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .step-number {
+    font-size: 2rem;
+    background-color: #05747F;
+    color: white;
+    border-radius: 50%;
+    padding: 10px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  
+  .footer {
+    padding: 20px;
+    text-align: center;
+    background-color: #353535;
+    color: white;
+  }
+  
+  .footer-links {
+    margin-top: 10px;
+  }
+  
+  .footer-links a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+  }
+  

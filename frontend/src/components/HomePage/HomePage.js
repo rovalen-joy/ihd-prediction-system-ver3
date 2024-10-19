@@ -8,7 +8,7 @@ const HomePage = () => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    // Show tooltip for first-time users
+    // Show tooltip for first-time user
     const firstLogin = localStorage.getItem('firstLogin');
     if (!firstLogin) {
       setShowTooltip(true);

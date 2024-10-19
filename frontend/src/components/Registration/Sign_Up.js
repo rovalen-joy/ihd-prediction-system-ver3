@@ -88,10 +88,11 @@ const SignUp = () => {
     try {
       toast.loading('Loading...', { id: 'signup_loading' });
 
+      // Create user with email, password, first name, and last name
       await createUser(credentials.email, credentials.password, credentials.firstName, credentials.lastName);
 
       toast.dismiss('signup_loading');
-      navigate('/home');
+      navigate('/home', { state: { firstName: credentials.firstName, lastName: credentials.lastName } });
     } catch (e) {
       toast.dismiss('signup_loading');
       toast.error(e.message);

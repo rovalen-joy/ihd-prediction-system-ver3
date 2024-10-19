@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+
 const HomePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Get firstName and lastName from location.state or fall back to default values
   const { firstName, lastName } = location.state || { firstName: 'User', lastName: '' };
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -22,6 +25,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center relative px-4 pb-4">
+      {/* Welcome Message */}
       <h1 className="text-4xl font-semibold mb-6 text-[#353535] mt-16 leading-tight">
         Welcome, Dr. {firstName} {lastName}!
       </h1>
@@ -35,6 +39,7 @@ const HomePage = () => {
         </p>
       </div>
 
+      {/* Steps Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-xl font-bold mb-2 text-[#353535]">
@@ -62,6 +67,7 @@ const HomePage = () => {
         </div>
       </div>
 
+      {/* Buttons */}
       <div className="mt-10 mb-2">
         <button
           className="bg-[#05747F] text-white py-3 px-6 rounded-lg font-medium mr-4 hover:bg-[#035f62] mt-2"
@@ -77,7 +83,7 @@ const HomePage = () => {
         </button>
       </div>
 
-      {/* Tooltip for Hamburger Menu */}
+      {/* Tooltip for First-Time Users */}
       {showTooltip && (
         <div className='absolute top-12 left-4 bg-white p-2 rounded-lg shadow-md z-50'>
           <p className="text-sm text-gray-700">Click the menu icon to navigate.</p>

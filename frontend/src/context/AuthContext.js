@@ -6,17 +6,28 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore'; // Firestore imports
+import { auth, db } from '../firebase'; // Firestore and Auth import
 import { Toaster } from 'react-hot-toast';
 
 const UserContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null); // Stores the authenticated user
+  const [userData, setUserData] = useState(null); // Stores additional user data like firstName, lastName
 
   // Signup function
-  const createUser = (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const createUser = async (email, password, firstName, lastName) => {
+    // Create user in Firebase Auth and store additional info in Firestore
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userId = userCredential.user.uid;
+
+    // Store the user's first name and last name in Firestore under the "users" collection
+    await setDoc(doc(db, 'users', userId), {
+      firstName,
+      lastName,
+      email
+    });
   };
 
   // Signin function
@@ -36,14 +47,32 @@ export const AuthContextProvider = ({ children }) => {
       console.log("Password reset email sent successfully.");
     } catch (error) {
       console.error("Error sending password reset email:", error);
-      throw error; 
+      throw error;
     }
   };
 
-  // Listen for authentication state changes
+  // Fetch additional user data from Firestore (firstName, lastName)
+  const fetchUserData = async (userId) => {
+    const docRef = doc(db, 'users', userId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      setUserData(docSnap.data());
+    } else {
+      console.error('No such user data found in Firestore!');
+    }
+  };
+
+  // Listen for authentication state changes and fetch user data
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        // Fetch additional user data from Firestore if user is authenticated
+        await fetchUserData(currentUser.uid);
+      } else {
+        setUser(null);
+        setUserData(null);
+      }
     });
     return () => {
       unsubscribe();
@@ -51,7 +80,7 @@ export const AuthContextProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ createUser, user, logout, signIn, resetPassword }}>
+    <UserContext.Provider value={{ createUser, user, userData, logout, signIn, resetPassword }}>
       {children}
       <Toaster />
     </UserContext.Provider>

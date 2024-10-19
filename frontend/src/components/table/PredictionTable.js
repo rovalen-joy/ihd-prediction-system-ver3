@@ -261,7 +261,7 @@ const PredictionTable = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="text-center text-sm py-2">
+                    <td colSpan="4" className="text-center text-white text-sm py-2">
                       No records found.
                     </td>
                   </tr>

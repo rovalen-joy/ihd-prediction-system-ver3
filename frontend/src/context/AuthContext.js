@@ -4,7 +4,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  sendPasswordResetEmail, 
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { Toaster } from 'react-hot-toast';
@@ -12,7 +12,7 @@ import { Toaster } from 'react-hot-toast';
 const UserContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Initialized as null
+  const [user, setUser] = useState(null); 
 
   // Signup function
   const createUser = (email, password) => {
@@ -29,9 +29,15 @@ export const AuthContextProvider = ({ children }) => {
     return signOut(auth);
   };
 
-  // Reset Password function
-  const resetPassword = (email) => {
-    return sendPasswordResetEmail(auth, email);
+  // Reset Password function with error handling
+  const resetPassword = async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      console.log("Password reset email sent successfully.");
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      throw error; 
+    }
   };
 
   // Listen for authentication state changes

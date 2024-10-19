@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import logo from '../../assets/logo.svg';
-import { FaEnvelope } from 'react-icons/fa6';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
+  const [verificationSent, setVerificationSent] = useState(false);
   const { resetPassword } = UserAuth();
   const navigate = useNavigate();
 
@@ -14,29 +14,19 @@ const ForgotPassword = () => {
     setEmail(email);
   };
 
-  const handleSubmit = async (e) => {
+  const handleVerificationSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      // Show loading toast
-      toast.loading('Sending password reset email...', { id: 'reset_loading' });
-
-      await resetPassword(email);
-
-      // Dismiss loading and show success message
-      toast.dismiss('reset_loading');
+      toast.loading('Sending password reset email...', { id: 'verify_loading' });
+      await resetPassword(email); // Firebase will send the link to its default reset page
+      toast.dismiss('verify_loading');
       toast.success('Password reset email sent! Please check your inbox.');
-
-      // Optionally, navigate back to login after a short delay
-      setTimeout(() => {
-        navigate('/');
-      }, 3000);
+      setVerificationSent(true);
     } catch (error) {
-      // Dismiss loading and show error message
-      toast.dismiss('reset_loading');
-      console.error(error.message);
-      toast.error(
-        'Failed to send password reset email. Please check the email entered.'
-      );
+      toast.dismiss('verify_loading');
+      console.error('Password reset error:', error.message);
+      toast.error(`Failed to send password reset email: ${error.message}`);
     }
   };
 
@@ -46,44 +36,41 @@ const ForgotPassword = () => {
 
   return (
     <div className='bg-cover bg-center h-screen flex items-center justify-center bg-login'>
-      <div className='bg-white px-[9.5rem] py-[2rem] rounded-2xl flex flex-col justify-center items-center'>
-        <img src={logo} alt='logo' className='w-32 h-32 mb-2' />
+      <div className='bg-white px-[7rem] py-[1rem] rounded-2xl flex flex-col justify-center items-center' style={{ width: '540px' }}>
+        <img src={logo} alt='logo' className='w-36 h-36 mb-1' />
+        <h1 className='text-3xl font-[400] text-[#353535] mb-1'>Forgot Password</h1>
 
-        <h1 className='text-4xl font-[400] text-[#353535]'>Forgot Password</h1>
-        <p className='text-center text-gray-600 mt-2'>
-          Enter your email below to receive a password reset link.
-        </p>
+        {!verificationSent ? (
+          <>
+            <p className='text-center text-gray-600 mt-2'>
+              Enter your email below to receive a password reset link.
+            </p>
+            <form className='flex flex-col gap-4 mt-6 w-full' onSubmit={handleVerificationSubmit}>
+              <div className='flex flex-col relative'>
+                <label htmlFor='email' className='text-primary font-semibold'>Email:</label>
+                <input
+                  id='email'
+                  type='email'
+                  className='active:border-[#353535] border-b-[3px] focus-visible:outline-0'
+                  onChange={(e) => handleOnChangeEmail(e.target.value)}
+                  required
+                  placeholder='Enter your email'
+                />
+              </div>
+              <button className='bg-[#05747F] text-base py-3 rounded-md font-medium my-[2rem] text-white' type='submit'>
+                Send Password Reset Link
+              </button>
+            </form>
+          </>
+        ) : (
+          <>
+            <p className='text-center text-gray-600 mt-2'>
+              A password reset link has been sent to your email. Please check your inbox and follow the instructions.
+            </p>
+          </>
+        )}
 
-        <form
-          className='flex flex-col gap-4 mt-10 w-[18rem]'
-          onSubmit={handleSubmit}
-        >
-          <div className='flex flex-col relative'>
-            <label htmlFor='email' className='text-primary font-semibold'>
-              Email:
-            </label>
-            <input
-              id='email'
-              type='email' // Ensure proper email validation
-              className='active:border-[#353535] border-b-[3px] focus-visible:outline-0'
-              onChange={(e) => handleOnChangeEmail(e.target.value)}
-              required
-              placeholder='Enter your email'
-            />
-            <FaEnvelope
-              size={20}
-              color='#979797'
-              className='absolute bottom-[.3rem] right-[.2rem]'
-            />
-          </div>
-          <button
-            className='bg-[#05747F] text-base py-3 rounded-md font-medium my-[2rem] text-white'
-            type='submit'
-          >
-            Reset Password
-          </button>
-        </form>
-        <div className='text-xs'>
+        <div className='text-xs mt-4'>
           Remembered your password?{' '}
           <span
             className='text-[#23929D] font-semibold cursor-pointer'

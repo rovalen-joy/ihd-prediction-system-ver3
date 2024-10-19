@@ -4,21 +4,20 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore'; // Firestore imports
-import { auth, db } from '../firebase'; // Firestore and Auth import
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { Toaster } from 'react-hot-toast';
 
 const UserContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Stores the authenticated user
-  const [userData, setUserData] = useState(null); // Stores additional user data like firstName, lastName
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null); // Store additional user data like firstName, lastName
 
   // Signup function
   const createUser = async (email, password, firstName, lastName) => {
-    // Create user in Firebase Auth and store additional info in Firestore
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const userId = userCredential.user.uid;
 
@@ -26,13 +25,29 @@ export const AuthContextProvider = ({ children }) => {
     await setDoc(doc(db, 'users', userId), {
       firstName,
       lastName,
-      email
+      email,
     });
   };
 
   // Signin function
-  const signIn = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const signIn = async (email, password) => {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userId = userCredential.user.uid;
+
+    // Fetch the user's data from Firestore
+    await fetchUserData(userId);
+    return userCredential;
+  };
+
+  // Fetch additional user data from Firestore (firstName, lastName)
+  const fetchUserData = async (userId) => {
+    const docRef = doc(db, 'users', userId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      setUserData(docSnap.data());
+    } else {
+      console.error('No such user data found in Firestore!');
+    }
   };
 
   // Logout function
@@ -44,21 +59,10 @@ export const AuthContextProvider = ({ children }) => {
   const resetPassword = async (email) => {
     try {
       await sendPasswordResetEmail(auth, email);
-      console.log("Password reset email sent successfully.");
+      console.log('Password reset email sent successfully.');
     } catch (error) {
-      console.error("Error sending password reset email:", error);
+      console.error('Error sending password reset email:', error);
       throw error;
-    }
-  };
-
-  // Fetch additional user data from Firestore (firstName, lastName)
-  const fetchUserData = async (userId) => {
-    const docRef = doc(db, 'users', userId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      setUserData(docSnap.data());
-    } else {
-      console.error('No such user data found in Firestore!');
     }
   };
 

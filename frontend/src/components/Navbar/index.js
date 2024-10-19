@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
 import { UserAuth } from '../../context/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -9,7 +9,16 @@ import toast from 'react-hot-toast';
 const NavigationBar = () => {
   const { user, logout } = UserAuth();
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    // Show tooltip for first-time login users
+    const firstLogin = localStorage.getItem('firstLogin');
+    if (!firstLogin) {
+      setShowTooltip(true);
+    }
+  }, []);
 
   const onLogout = async () => {
     try {
@@ -40,20 +49,34 @@ const NavigationBar = () => {
     setIsSidebarOpen(false);
   };
 
+  const handleTooltipClose = () => {
+    setShowTooltip(false);
+    localStorage.setItem('firstLogin', true);
+  };
+
   return (
     <>
       {/* Navbar */}
-      <nav className='bg-[#00717A] flex justify-between items-center py-4 px-4 shadow-sm'>
-        {/* Hamburger Menu */}
+      <nav className='bg-[#00717A] flex justify-between items-center py-4 px-4 shadow-sm relative'>
+        {/* Hamburger Menu with bounce effect */}
         <button
           onClick={toggleSidebar}
-          className='text-white focus:outline-none focus:ring-2 focus:ring-white rounded'
+          className='text-white focus:outline-none focus:ring-2 focus:ring-white rounded animated-bounce'
           aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
         >
           {isSidebarOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
         </button>
 
-        {/* User Info and Logout  */}
+        {/* Tooltip pointing to Hamburger Menu */}
+        {showTooltip && (
+          <div className='absolute top-12 left-4 bg-white p-2 rounded-lg shadow-md z-50'>
+            <p className="text-sm text-gray-700">Click the menu icon to navigate.</p>
+            <div className="absolute top-[-8px] left-4 h-0 w-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-b-8 border-b-white"></div>
+            <button className='text-sm text-blue-600' onClick={handleTooltipClose}>Got it!</button>
+          </div>
+        )}
+
+        {/* User Info and Logout */}
         <div className='hidden md:flex items-center gap-2'>
           {user && (
             <div className='text-white flex items-center gap-1 text-base'>
@@ -104,6 +127,19 @@ const NavigationBar = () => {
           {/* Sidebar Links */}
           <nav className='flex-1 p-4'>
             <ul className='space-y-4'>
+              <li>
+                <NavLink
+                  to='/home'
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'block hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                  }
+                  onClick={closeSidebar}
+                >
+                  Home
+                </NavLink>
+              </li>
               <li>
                 <NavLink
                   to='/prediction-table'

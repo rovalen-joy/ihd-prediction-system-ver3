@@ -15,14 +15,14 @@ const AboutUs = () => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 bg-white py-2 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 bg-white py-2 px-4 sm:px-6 lg:px-8 mb-10"> 
         <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-8 border-2 border-[#00717A]">
-
+          
           {/* Our Mission */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-[#00717A] mb-2">Our Mission</h2>
             <p className="text-gray-700 leading-relaxed">
-              At the IHD Prediction System, our mission is to leverage advanced machine learning algorithms and comprehensive patient data to provide timely and actionable insights. By identifying individuals at high risk of ischemic heart disease, we aim to facilitate early interventions, improve patient outcomes, and support healthcare professionals in making informed decisions.
+              At IHD Prediction System, our goal is to make heart disease risk prediction simple and effective. By using advanced machine learning and patient data, we provide clear, actionable insights to healthcare professionals. This helps identify people who may be at high risk of ischemic heart disease, allowing for earlier interventions and better patient outcomes. We aim to support healthcare providers in making informed decisions that can save lives.
             </p>
           </section>
 
@@ -38,23 +38,21 @@ const AboutUs = () => {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-[#00717A] mb-2">Important Disclaimer</h2>
             <p className="text-gray-700 leading-relaxed">
-              It is important to note that our system is designed exclusively for <strong>prediction and early intervention</strong>. It does <strong>not</strong> provide <strong>diagnosis or prescription recommendations</strong>. The responsibility of diagnosing and deciding on prescriptions based on patient symptoms and risk factors lies solely with qualified medical experts and practitioners.
+              It’s important to understand that the IHD Prediction System is a tool designed to assist with predicting the risk of ischemic heart disease. However, it does <strong>not</strong> provide medical diagnoses or prescribe treatments. Any decisions about patient care, including diagnosis and treatment, should always be made by qualified medical professionals. Our system is here to support healthcare providers, but it cannot replace their expertise and judgment.
             </p>
           </section>
 
           {/* Contact Us */}
-          <section>
+          <section className="mb-2">
             <h2 className="text-xl font-semibold text-[#00717A] mb-2">Contact Us</h2>
             <p className="text-gray-700 leading-relaxed mb-2">
               For more information about our services, collaborations, or inquiries, please feel free to reach out to us.
             </p>
-            <a
-              href="mailto:info@ihdpredictions.com"
-              className="text-[#00717A] underline hover:text-[#005f61] text-base"
-            >
+            <a href="mailto:info@ihdpredictions.com" className="text-[#00717A] underline hover:text-[#005f61] text-base">
               ihdpredictionteam@gmail.com
             </a>
           </section>
+
         </div>
       </main>
 

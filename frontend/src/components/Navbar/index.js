@@ -142,19 +142,6 @@ const NavigationBar = () => {
               </li>
               <li>
                 <NavLink
-                  to='/prediction-table'
-                  className={({ isActive }) =>
-                    isActive
-                      ? 'block bg-white text-[#00717A] rounded px-3 py-2 font-medium'
-                      : 'block hover:bg-[#005f61] rounded px-3 py-2 font-medium'
-                  }
-                  onClick={closeSidebar}
-                >
-                  Patients Record
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
                   to='/prediction-form'
                   className={({ isActive }) =>
                     isActive
@@ -164,6 +151,19 @@ const NavigationBar = () => {
                   onClick={closeSidebar}
                 >
                   Prediction
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to='/prediction-table'
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'block hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                  }
+                  onClick={closeSidebar}
+                >
+                  Patients Record
                 </NavLink>
               </li>
               <li>

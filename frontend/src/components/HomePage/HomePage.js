@@ -1,82 +1,225 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../../context/AuthContext';
+import { FaUserPlus, FaRegChartBar, FaSave } from 'react-icons/fa';
+import Joyride, { EVENTS, STATUS } from 'react-joyride';
 
 const HomePage = () => {
   const { userData } = UserAuth(); // Get the user data from AuthContext
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [runTour, setRunTour] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const firstLogin = localStorage.getItem('firstLogin');
     if (!firstLogin) {
-      setShowTooltip(true);
+      setRunTour(true); // Start the Joyride tour
       localStorage.setItem('firstLogin', true);
     }
   }, []);
 
-  const handleTooltipClose = () => {
-    setShowTooltip(false);
+  // Listen for the 'restartJoyride' event to restart the tour
+  useEffect(() => {
+    const handleRestart = () => {
+      setRunTour(true);
+    };
+
+    window.addEventListener('restartJoyride', handleRestart);
+
+    return () => {
+      window.removeEventListener('restartJoyride', handleRestart);
+    };
+  }, []);
+
+  // Define the steps for the guided tour
+  const steps = [
+    {
+      target: '.joyride-welcome',
+      content: `Welcome to the IHD Prediction System, Dr. ${userData?.firstName || 'User'}! This tour will guide you through the key features of the system.`,
+      placement: 'bottom',
+      disableBeacon: true,
+    },
+    {
+      target: '.joyride-steps',
+      content: 'Here are the main steps to use the system effectively:',
+      placement: 'top',
+    },
+    {
+      target: '.joyride-step1',
+      content: "Step 1: Fill in the Patient's Information. Enter comprehensive patient data to generate accurate predictions.",
+      placement: 'right',
+    },
+    {
+      target: '.joyride-step2',
+      content: 'Step 2: Generate Prediction. Use the prediction form to assess the patient’s risk of ischemic heart disease.',
+      placement: 'right',
+    },
+    {
+      target: '.joyride-step3',
+      content: 'Step 3: Save and Review. Save predictions for future reference and review past assessments anytime.',
+      placement: 'right',
+    },
+    {
+      target: '.joyride-hamburger-menu',
+      content: 'This is the hamburger menu. Click here to navigate through different sections of the system.',
+      placement: 'bottom',
+    },
+    {
+      target: '.joyride-restart-tour-target',
+      content: 'Need a refresher? Click the "Get Started" button to restart the guided tour at any time.',
+      placement: 'center',
+      spotlightPadding: 0,
+      disableBeacon: true,
+    },
+    {
+      target: '.joyride-disclaimer-target',
+      content: (
+        <div style={{textAlign:'justify'}}>
+          <p style={{ color: 'red', fontWeight: 'bold'}}>Disclaimer:</p>
+          <p>
+          The IHD Prediction System is intended to support the assessment of ischemic heart disease risk. It does not provide diagnoses or treatment recommendations. All medical decisions should be made by qualified healthcare professionals.
+          </p>
+        </div>
+      ),
+      placement: 'center',
+      spotlightPadding: 0,
+      disableBeacon: true,
+    },
+  ];
+
+  // Handle Joyride callback events
+  const handleJoyrideCallback = (data) => {
+    const { status, type } = data;
+    const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
+
+    if (finishedStatuses.includes(status)) {
+      setRunTour(false);
+    }
+
+    if (type === EVENTS.TOUR_END) {
+      setRunTour(false);
+    }
+  };
+
+  // Function to start the tour manually
+  const startTour = () => {
+    setRunTour(true);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center relative px-4 pb-4">
-      <h1 className="text-4xl font-semibold mb-6 text-[#353535] mt-16 leading-tight">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center relative px-4 pb-4 joyride-container">
+      {/* Joyride Component */}
+      <Joyride
+        steps={steps}
+        run={runTour}
+        continuous
+        showProgress
+        showSkipButton
+        callback={handleJoyrideCallback}
+        locale={{
+          last: 'Got it', 
+        }}
+        styles={{
+          options: {
+            zIndex: 10000,
+          },
+          buttonNext: {
+            backgroundColor: '#05747F', //  color for "Next" button
+            color: 'white',
+          },
+          buttonBack: {
+            color: '#757575', // color for "Back" button
+          },
+          buttonClose: {
+            color: '#ff0000', //  color for "Close" button
+          },
+          buttonSkip: {
+            color: '#ff0000', // color for "Skip" button
+          },
+          buttonPrimary: {
+            backgroundColor: '#05747F', // color for "Got it" button
+            color: 'white',
+          },
+        }}
+      />
+
+      {/* Hidden target for restarting tour */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0 h-0 joyride-restart-tour-target"></div>
+
+      {/* Hidden target for disclaimer */}
+      <div className="absolute top-0 left-0 w-0 h-0 joyride-disclaimer-target"></div>
+
+      {/* Header */}
+      <h1 className="text-4xl font-semibold mb-6 text-[#353535] mt-10 leading-tight joyride-welcome">
         Welcome, Dr. {userData?.firstName || 'User'} {userData?.lastName || ''}!
       </h1>
 
+      {/* Introduction */}
       <div className="max-w-4xl text-center mb-10">
         <p className="text-lg text-gray-700 mb-4">
-          Our IHD Prediction System helps you assess patients' risk of ischemic heart disease using comprehensive data inputs. Here's how you can make the most out of the system.
+          The IHD Prediction System enables you to assess your patients' risk of ischemic heart disease using comprehensive data inputs. Our tools assist you in making informed decisions to improve patient care.
         </p>
-        <p className="text-lg text-gray-700 mb-4">Follow the steps below to get started:</p>
+        <p className="text-lg text-gray-700 mb-6">Get acquainted with the system by clicking the "Get Started" button below:</p>
+
+        {/* Get Started Button */}
+        <button
+          onClick={startTour}
+          className="bg-[#05747F] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#035f62]  transition-colors duration-200 joyride-get-started"
+          title="Start the guided tour"
+        >
+          Get Started
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+      {/* Steps with Icons */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl joyride-steps">
+        {/* Step 1 */}
+        <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center joyride-step1">
+          <FaUserPlus className="text-4xl text-[#05747F] mb-4" />
           <h2 className="text-xl font-bold mb-2 text-[#353535]">1. Fill in the Patient's Information</h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-center">
             Enter patient data such as age, cholesterol levels, and blood pressure to generate accurate predictions.
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+
+        {/* Step 2 */}
+        <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center joyride-step2">
+          <FaRegChartBar className="text-4xl text-[#05747F] mb-4" />
           <h2 className="text-xl font-bold mb-2 text-[#353535]">2. Generate Prediction</h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-center">
             Use our prediction form to assess the patient’s risk of ischemic heart disease and review the results.
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+
+        {/* Step 3 */}
+        <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center joyride-step3">
+          <FaSave className="text-4xl text-[#05747F] mb-4" />
           <h2 className="text-xl font-bold mb-2 text-[#353535]">3. Save and Review</h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-center">
             Save predictions for future reference and review past assessments at any time.
           </p>
         </div>
       </div>
 
-      <div className="mt-10 mb-2">
+      {/* Navigation Buttons */}
+      <div className="mt-10 mb-2 flex flex-col md:flex-row gap-4">
+        {/* Prediction Form Button */}
         <button
-          className="bg-[#05747F] text-white py-3 px-6 rounded-lg font-medium mr-4 hover:bg-[#035f62] mt-2"
+          className="bg-[#05747F] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#035f62] transition-colors duration-200 joyride-prediction-form"
           onClick={() => navigate('/prediction-form')}
+          title="Fill in patient details to generate a prediction"
         >
           Go to Prediction Form
         </button>
+
+        {/* Patient History Button */}
         <button
-          className="bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 mt-2"
+          className="bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200 joyride-patient-history"
           onClick={() => navigate('/prediction-table')}
+          title="View saved patient history and predictions"
         >
           View Patient History
         </button>
       </div>
-
-      {showTooltip && (
-        <div className="absolute top-12 left-4 bg-white p-2 rounded-lg shadow-md z-50">
-          <p className="text-sm text-gray-700">Click the menu icon to navigate.</p>
-          <div className="absolute top-[-8px] left-4 h-0 w-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-b-8 border-b-white"></div>
-          <button className="text-sm text-blue-600" onClick={handleTooltipClose}>
-            Got it!
-          </button>
-        </div>
-      )}
     </div>
   );
 };

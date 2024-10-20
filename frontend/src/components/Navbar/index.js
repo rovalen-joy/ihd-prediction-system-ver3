@@ -1,9 +1,11 @@
+// Navbar/index.js
+
 import React, { useState, useEffect } from 'react';
 import './index.css';
 import { UserAuth } from '../../context/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { MdLogout, MdMenu, MdClose } from 'react-icons/md'; 
-import { FaUser } from 'react-icons/fa6';
+import { MdLogout, MdMenu, MdClose } from 'react-icons/md';
+import { FaUser, FaHome, FaRegChartBar, FaListAlt, FaInfoCircle } from 'react-icons/fa'; // Corrected import path
 import toast from 'react-hot-toast';
 
 const NavigationBar = () => {
@@ -61,7 +63,7 @@ const NavigationBar = () => {
         {/* Hamburger Menu with bounce effect */}
         <button
           onClick={toggleSidebar}
-          className='text-white focus:outline-none focus:ring-2 focus:ring-white rounded animated-bounce'
+          className='text-white focus:outline-none focus:ring-2 focus:ring-white rounded animated-bounce joyride-hamburger-menu'
           aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
         >
           {isSidebarOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
@@ -77,7 +79,7 @@ const NavigationBar = () => {
         )}
 
         {/* User Info and Logout */}
-        <div className='hidden md:flex items-center gap-2'>
+        <div className='hidden md:flex items-center gap-4'>
           {user && (
             <div className='text-white flex items-center gap-1 text-base'>
               <FaUser size={18} />
@@ -132,11 +134,12 @@ const NavigationBar = () => {
                   to='/home'
                   className={({ isActive }) =>
                     isActive
-                      ? 'block bg-white text-[#00717A] rounded px-3 py-2 font-medium'
-                      : 'block hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                      ? 'flex items-center bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'flex items-center hover:bg-[#005f61] rounded px-3 py-2 font-medium'
                   }
                   onClick={closeSidebar}
                 >
+                  <FaHome className="mr-2" />
                   Home
                 </NavLink>
               </li>
@@ -145,11 +148,12 @@ const NavigationBar = () => {
                   to='/prediction-form'
                   className={({ isActive }) =>
                     isActive
-                      ? 'block bg-white text-[#00717A] rounded px-3 py-2 font-medium'
-                      : 'block hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                      ? 'flex items-center bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'flex items-center hover:bg-[#005f61] rounded px-3 py-2 font-medium'
                   }
                   onClick={closeSidebar}
                 >
+                  <FaRegChartBar className="mr-2" />
                   Prediction
                 </NavLink>
               </li>
@@ -158,11 +162,12 @@ const NavigationBar = () => {
                   to='/prediction-table'
                   className={({ isActive }) =>
                     isActive
-                      ? 'block bg-white text-[#00717A] rounded px-3 py-2 font-medium'
-                      : 'block hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                      ? 'flex items-center bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'flex items-center hover:bg-[#005f61] rounded px-3 py-2 font-medium'
                   }
                   onClick={closeSidebar}
                 >
+                  <FaListAlt className="mr-2" />
                   Patients Record
                 </NavLink>
               </li>
@@ -171,11 +176,12 @@ const NavigationBar = () => {
                   to='/about-us'
                   className={({ isActive }) =>
                     isActive
-                      ? 'block bg-white text-[#00717A] rounded px-3 py-2 font-medium'
-                      : 'block hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                      ? 'flex items-center bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'flex items-center hover:bg-[#005f61] rounded px-3 py-2 font-medium'
                   }
                   onClick={closeSidebar}
                 >
+                  <FaInfoCircle className="mr-2" />
                   About Us
                 </NavLink>
               </li>

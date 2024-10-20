@@ -1,26 +1,15 @@
-// Navbar/index.js
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './index.css';
 import { UserAuth } from '../../context/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { MdLogout, MdMenu, MdClose } from 'react-icons/md';
-import { FaUser, FaHome, FaRegChartBar, FaListAlt, FaInfoCircle } from 'react-icons/fa'; // Corrected import path
+import { FaUser, FaHome, FaRegChartBar, FaListAlt, FaInfoCircle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const NavigationBar = () => {
   const { user, logout } = UserAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  useEffect(() => {
-    // Show tooltip for first-time login users
-    const firstLogin = localStorage.getItem('firstLogin');
-    if (!firstLogin) {
-      setShowTooltip(true);
-    }
-  }, []);
 
   const onLogout = async () => {
     try {
@@ -51,11 +40,6 @@ const NavigationBar = () => {
     setIsSidebarOpen(false);
   };
 
-  const handleTooltipClose = () => {
-    setShowTooltip(false);
-    localStorage.setItem('firstLogin', true);
-  };
-
   return (
     <>
       {/* Navbar */}
@@ -68,15 +52,6 @@ const NavigationBar = () => {
         >
           {isSidebarOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
         </button>
-
-        {/* Tooltip pointing to Hamburger Menu */}
-        {showTooltip && (
-          <div className='absolute top-12 left-4 bg-white p-2 rounded-lg shadow-md z-50'>
-            <p className="text-sm text-gray-700">Click the menu icon to navigate.</p>
-            <div className="absolute top-[-8px] left-4 h-0 w-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-b-8 border-b-white"></div>
-            <button className='text-sm text-blue-600' onClick={handleTooltipClose}>Got it!</button>
-          </div>
-        )}
 
         {/* User Info and Logout */}
         <div className='hidden md:flex items-center gap-4'>

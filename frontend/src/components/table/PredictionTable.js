@@ -75,8 +75,8 @@ const PredictionTable = () => {
         console.error('Error fetching patients:', error);
         toast.error('Failed to fetch patient data.', {
           style: {
-            fontSize: '0.875rem',     // 14px
-            padding: '0.5rem',        // 8px
+            fontSize: '0.875rem', // 14px
+            padding: '0.5rem', // 8px
           },
         });
         setLoading(false);
@@ -155,7 +155,7 @@ const PredictionTable = () => {
 
   // **Handle Row Click to Navigate to Details**
   const handleRowClick = (patientId) => {
-    navigate(`/patient-details/${patientId}`); // Ensure this route is defined
+    navigate(`/patient-details/${patientId}`); 
   };
 
   // **Calculate Paginated Data**
@@ -210,17 +210,24 @@ const PredictionTable = () => {
           </div>
         </div>
 
-        {/* Patient Data Table with Rounded Corners */}
-        <div className="overflow-x-auto relative mt-2">
-          {/* Rounded Container */}
-          <div className="rounded-lg overflow-hidden shadow">
+        {/* Instruction Note */}
+        <p className="text-sm text-white mt-2">
+          Click on a patient record to view full details.
+        </p>
+
+        {/* Patient Data Table */}
+        <div className="overflow-x-auto relative mt-6 mb-4">
+          <div
+            className="rounded-lg overflow-hidden shadow mx-auto"
+            style={{ maxWidth: '1200px' }}
+          >
             <table className="w-full table-auto border-collapse text-sm">
               <thead>
                 <tr className="bg-[#299FA8] text-white">
-                  <th className="font-medium py-2 px-1">Patient ID</th>
-                  <th className="font-medium py-2 px-1">Last Name</th>
-                  <th className="font-medium py-2 px-1">First Name</th>
-                  <th className="font-medium py-2 px-1">Date</th>
+                  <th className="font-medium py-3 px-1">Patient ID</th>
+                  <th className="font-medium py-3 px-1">Last Name</th>
+                  <th className="font-medium py-3 px-1">First Name</th>
+                  <th className="font-medium py-3 px-1">Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -234,10 +241,12 @@ const PredictionTable = () => {
                   currentPatients.map((data) => (
                     <tr
                       key={data.id}
-                      className={`bg-white text-center font-medium hover:bg-gray-100 cursor-pointer transition-colors duration-200`}
+                      className={`bg-white text-center font-medium hover:bg-[#c6fbff] cursor-pointer transition-transform transform-gpu duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00717A]`}
                       onClick={() => handleRowClick(data.id)}
-                      aria-selected={false}
+                      tabIndex="0" 
                       role="row"
+                      aria-label={`View details for patient ${data.data.firstname} ${data.data.lastname}`}
+                      title="View Details" // Tooltip
                     >
                       {/* Patient ID */}
                       <td className="font-medium py-2 px-1">
@@ -273,7 +282,7 @@ const PredictionTable = () => {
 
         {/* Pagination Controls */}
         {!loading && filteredPatients.length > recordsPerPage && (
-          <div className="flex justify-center mt-3">
+          <div className="flex justify-center mt-4">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}

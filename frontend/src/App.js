@@ -13,6 +13,8 @@ import AboutUs from './components/AboutUs/AboutUs';
 import HomePage from './components/HomePage/HomePage';
 import FAQ from './components/Faq/Faq';
 import Profile from './components/Profile/Profile';
+import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
+import TermsOfUse from './components/TermsOfUse/TermsUse';
 
 function App() {
   return (
@@ -23,6 +25,10 @@ function App() {
           <Route path='/' element={<Login />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/forgot-password' element={<ForgotPassword />} /> 
+          
+          {/* Public Routes for Terms and Privacy */}
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           {/* Protected Routes */}
           <Route element={
@@ -36,7 +42,6 @@ function App() {
             <Route path='/about-us' element={<AboutUs />} />
             <Route path='/faq' element={<FAQ />} /> 
             <Route path='/profile' element={<Profile />} />
-
           </Route>
 
           {/* PatientDetails */}

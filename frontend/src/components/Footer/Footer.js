@@ -23,7 +23,16 @@ const Footer = () => {
         <div className="text-center md:text-left">
           <h2 className="text-lg font-semibold mb-2">Contact Us</h2>
           <p>IHD Prediction Team</p>
-          <p>Email: <a href="mailto:ihdpredictionteam@gmail.com" className="text-white hover:underline">ihdpredictionteam@gmail.com</a></p>
+          <p>
+            Email:{' '}
+            <a
+              href="mailto:ihdpredictionteam@gmail.com"
+              className="text-white hover:underline"
+              aria-label="Send email to ihdpredictionteam@gmail.com"
+            >
+              ihdpredictionteam@gmail.com
+            </a>
+          </p>
         </div>
 
         {/* Quick Links Section */}
@@ -31,10 +40,26 @@ const Footer = () => {
           <h2 className="text-lg font-semibold mb-2">Quick Links</h2>
           <ul>
             <li>
-              <a href="/privacy-policy" className="text-white hover:underline">Privacy Policy</a>
+              <a
+                href="/terms-of-use"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:underline"
+                aria-label="Open Terms of Use in a new tab"
+              >
+                Terms of Use
+              </a>
             </li>
             <li>
-              <a href="/terms-of-use" className="text-white hover:underline">Terms of Use</a>
+              <a
+                href="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:underline"
+                aria-label="Open Privacy Policy in a new tab"
+              >
+                Privacy Policy
+              </a>
             </li>
           </ul>
         </div>

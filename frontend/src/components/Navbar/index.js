@@ -3,7 +3,7 @@ import './index.css';
 import { UserAuth } from '../../context/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { MdLogout, MdMenu, MdClose } from 'react-icons/md';
-import { FaUser, FaHome, FaRegChartBar, FaListAlt, FaInfoCircle } from 'react-icons/fa';
+import { FaUser, FaHome, FaRegChartBar, FaListAlt, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const NavigationBar = () => {
@@ -158,6 +158,20 @@ const NavigationBar = () => {
                 >
                   <FaInfoCircle className="mr-2" />
                   About Us
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to='/faq'
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'flex items-center bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'flex items-center hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                    }
+                    onClick={closeSidebar}
+                >
+                  <FaQuestionCircle className="mr-2" />
+                  FAQ
                 </NavLink>
               </li>
             </ul>

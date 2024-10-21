@@ -10,7 +10,8 @@ import PredictionTable from './components/table/PredictionTable';
 import PatientDetails from './components/table/PatientDetails'; 
 import Layout from './components/Layout/Layout';
 import AboutUs from './components/AboutUs/AboutUs'; 
-import HomePage from './components/HomePage/HomePage'; 
+import HomePage from './components/HomePage/HomePage';
+import FAQ from './components/Faq/Faq';
 
 function App() {
   return (
@@ -31,7 +32,8 @@ function App() {
             <Route path='/home' element={<HomePage />} />
             <Route path='/prediction-form' element={<PredictionForm />} />
             <Route path='/prediction-table' element={<PredictionTable />} />
-            <Route path='/about-us' element={<AboutUs />} /> 
+            <Route path='/about-us' element={<AboutUs />} />
+            <Route path='/faq' element={<FAQ />} /> 
           </Route>
 
           {/* PatientDetails */}

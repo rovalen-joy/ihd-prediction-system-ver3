@@ -13,7 +13,7 @@ const HomePage = () => {
     const firstLogin = localStorage.getItem('firstLogin');
     if (!firstLogin) {
       setRunTour(true); // Start the Joyride tour
-      localStorage.setItem('firstLogin', true);
+      localStorage.setItem('firstLogin', 'true');
     }
   }, []);
 
@@ -73,10 +73,10 @@ const HomePage = () => {
     {
       target: '.joyride-disclaimer-target',
       content: (
-        <div style={{textAlign:'justify'}}>
-          <p style={{ color: 'red', fontWeight: 'bold'}}>Disclaimer:</p>
+        <div style={{ textAlign: 'justify' }}>
+          <p style={{ color: 'red', fontWeight: 'bold' }}>Disclaimer:</p>
           <p>
-          The IHD Prediction System is intended to support the assessment of ischemic heart disease risk. It does not provide diagnoses or treatment recommendations. All medical decisions should be made by qualified healthcare professionals.
+            The IHD Prediction System is intended to support the assessment of ischemic heart disease risk. It does not provide diagnoses or treatment recommendations. All medical decisions should be made by qualified healthcare professionals.
           </p>
         </div>
       ),
@@ -116,21 +116,21 @@ const HomePage = () => {
         showSkipButton
         callback={handleJoyrideCallback}
         locale={{
-          last: 'Got it', 
+          last: 'Got it',
         }}
         styles={{
           options: {
             zIndex: 10000,
           },
           buttonNext: {
-            backgroundColor: '#05747F', //  color for "Next" button
+            backgroundColor: '#05747F', // color for "Next" button
             color: 'white',
           },
           buttonBack: {
             color: '#757575', // color for "Back" button
           },
           buttonClose: {
-            color: '#ff0000', //  color for "Close" button
+            color: '#ff0000', // color for "Close" button
           },
           buttonSkip: {
             color: '#ff0000', // color for "Skip" button
@@ -158,12 +158,14 @@ const HomePage = () => {
         <p className="text-lg text-gray-700 mb-4">
           The IHD Prediction System enables you to assess your patients' risk of ischemic heart disease using comprehensive data inputs. Our tools assist you in making informed decisions to improve patient care.
         </p>
-        <p className="text-lg text-gray-700 mb-6">Get acquainted with the system by clicking the "Get Started" button below:</p>
+        <p className="text-lg text-gray-700 mb-6">
+          Get acquainted with the system by clicking the "Get Started" button below:
+        </p>
 
         {/* Get Started Button */}
         <button
           onClick={startTour}
-          className="bg-[#05747F] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#035f62]  transition-colors duration-200 joyride-get-started"
+          className="bg-[#05747F] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#035f62] transition-colors duration-200 joyride-get-started"
           title="Start the guided tour"
         >
           Get Started

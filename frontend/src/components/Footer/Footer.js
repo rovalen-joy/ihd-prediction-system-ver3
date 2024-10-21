@@ -23,7 +23,7 @@ const Footer = () => {
         <div className="text-center md:text-left">
           <h2 className="text-lg font-semibold mb-2">Contact Us</h2>
           <p>IHD Prediction Team</p>
-          <p>Email: <a href="mailto:ihdpredictionteam@example.com" className="text-white hover:underline">ihdpredictionteam@example.com</a></p>
+          <p>Email: <a href="mailto:ihdpredictionteam@gmail.com" className="text-white hover:underline">ihdpredictionteam@gmail.com</a></p>
         </div>
 
         {/* Quick Links Section */}

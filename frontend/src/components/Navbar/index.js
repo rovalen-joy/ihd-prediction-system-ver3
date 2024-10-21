@@ -120,6 +120,20 @@ const NavigationBar = () => {
               </li>
               <li>
                 <NavLink
+                  to='/profile'
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'flex items-center bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'flex items-center hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                  }
+                  onClick={closeSidebar}
+                >
+                  <FaUser className="mr-2" />
+                  Profile
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
                   to='/prediction-form'
                   className={({ isActive }) =>
                     isActive

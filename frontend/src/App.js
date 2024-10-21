@@ -12,6 +12,7 @@ import Layout from './components/Layout/Layout';
 import AboutUs from './components/AboutUs/AboutUs'; 
 import HomePage from './components/HomePage/HomePage';
 import FAQ from './components/Faq/Faq';
+import Profile from './components/Profile/Profile';
 
 function App() {
   return (
@@ -34,6 +35,8 @@ function App() {
             <Route path='/prediction-table' element={<PredictionTable />} />
             <Route path='/about-us' element={<AboutUs />} />
             <Route path='/faq' element={<FAQ />} /> 
+            <Route path='/profile' element={<Profile />} />
+
           </Route>
 
           {/* PatientDetails */}

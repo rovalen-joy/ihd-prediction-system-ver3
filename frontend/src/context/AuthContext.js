@@ -6,9 +6,9 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 const UserContext = createContext();
 
@@ -18,25 +18,53 @@ export const AuthContextProvider = ({ children }) => {
 
   // Signup function
   const createUser = async (email, password, firstName, lastName) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const userId = userCredential.user.uid;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userId = userCredential.user.uid;
 
-    // Store the user's first name and last name in Firestore under the "users" collection
-    await setDoc(doc(db, 'users', userId), {
-      firstName,
-      lastName,
-      email,
-    });
+      // Store the user's first name and last name in Firestore under the "users" collection
+      await setDoc(doc(db, 'users', userId), {
+        firstName,
+        lastName,
+        email,
+      });
+
+      toast.success('Account created successfully');
+    } catch (error) {
+      console.error('Error creating user:', error.message);
+      toast.error(`Failed to create account: ${error.message}`);
+      throw error;
+    }
   };
 
-  // Signin function
+  // Signin function with improved error handling
   const signIn = async (email, password) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const userId = userCredential.user.uid;
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential;
+    } catch (error) {
+      console.error('Error signing in:', error.message);
 
-    // Fetch the user's data from Firestore
-    await fetchUserData(userId);
-    return userCredential;
+      // Handle specific authentication errors
+      switch (error.code) {
+        case 'auth/invalid-email':
+          toast.error('The email address is not valid.');
+          break;
+        case 'auth/user-disabled':
+          toast.error('This user account has been disabled.');
+          break;
+        case 'auth/user-not-found':
+          toast.error('No account found with this email.');
+          break;
+        case 'auth/wrong-password':
+          toast.error('Incorrect password. Please try again.');
+          break;
+        default:
+          toast.error('Failed to sign in. Please check your credentials and try again.');
+          break;
+      }
+      throw error;
+    }
   };
 
   // Fetch additional user data from Firestore (firstName, lastName)
@@ -47,39 +75,69 @@ export const AuthContextProvider = ({ children }) => {
       setUserData(docSnap.data());
     } else {
       console.error('No such user data found in Firestore!');
+      setUserData(null);
     }
   };
 
+  // Listen to Firestore user document changes in real-time
+  const listenToUserData = (userId) => {
+    const docRef = doc(db, 'users', userId);
+    return onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+      } else {
+        setUserData(null);
+      }
+    });
+  };
+
   // Logout function
-  const logout = () => {
-    return signOut(auth);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Error logging out:', error.message);
+      toast.error(`Failed to logout: ${error.message}`);
+      throw error;
+    }
   };
 
   // Reset Password function with error handling
   const resetPassword = async (email) => {
     try {
       await sendPasswordResetEmail(auth, email);
-      console.log('Password reset email sent successfully.');
+      toast.success('Password reset email sent successfully.');
     } catch (error) {
-      console.error('Error sending password reset email:', error);
+      console.error('Error sending password reset email:', error.message);
+      toast.error(`Failed to send password reset email: ${error.message}`);
       throw error;
     }
   };
 
   // Listen for authentication state changes and fetch user data
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        // Fetch additional user data from Firestore if user is authenticated
-        await fetchUserData(currentUser.uid);
+        fetchUserData(currentUser.uid);
+
+        // Start listening to Firestore user document changes
+        const unsubscribeFirestore = listenToUserData(currentUser.uid);
+
+        // Cleanup Firestore listener on unmount or user change
+        return () => {
+          unsubscribeFirestore();
+        };
       } else {
         setUser(null);
         setUserData(null);
       }
     });
+
+    // Cleanup Auth listener on unmount
     return () => {
-      unsubscribe();
+      unsubscribeAuth();
     };
   }, []);
 

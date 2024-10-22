@@ -85,13 +85,13 @@ const SignUp = () => {
       return toast.error('Passwords do not match');
     }
 
-    // Show the Terms and Conditions modal before creating an account
+    // Show the Terms of Use and Privacy Policy modal before creating an account
     setShowTermsModal(true);
   };
 
   const handleAcceptTerms = async () => {
     if (!termsAgreed) {
-      return toast.error('You must agree to the terms and conditions to proceed.');
+      return toast.error('You must agree to the Terms of Use and Privacy Policy to proceed.');
     }
 
     try {
@@ -235,37 +235,38 @@ const SignUp = () => {
         </div>
       </div>
 
-      {/* Terms and Conditions Modal */}
+      {/* Terms of Use and Privacy Policy Modal */}
       {showTermsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-lg">
-            <h2 className="text-xl font-bold mb-4">Terms and Conditions & Privacy Policy</h2>
+            <h2 className="text-xl font-bold mb-4">Terms of Use & Privacy Policy</h2>
             <div className="max-h-60 overflow-y-auto text-sm text-gray-600 mb-4">
+              {/* Terms of Use Section */}
+              <h3 className="text-lg font-semibold">Terms of Use</h3>
               <p>
-                By signing up for an account, you agree to abide by the following terms and conditions. You acknowledge that you are providing accurate information and will be responsible for any data entered into the system. You agree to the use of cookies and other tracking technologies.
+                These Terms of Use govern your use of the Ischemic Heart Disease Prediction System. By using the system, you agree to these terms.
               </p>
-              <p className="mt-2">
-                You agree to comply with all applicable laws and regulations. This service is provided "as-is" without any warranties. We reserve the right to terminate or suspend your account at any time, especially if any suspicious or malicious activity is detected.
-              </p>
-              <p className="mt-2">
-                The information you provide will be securely stored and used for the purpose of providing the service. We may update these terms and conditions at any time, and your continued use of the service will be considered as acceptance of any modifications.
-              </p>
-              <p className="mt-2">
-                You agree that the service may involve third-party integrations and that we will not be liable for any issues arising from such integrations. In case of any disputes, our decision will be final.
-              </p>
-              <p className="mt-2">
-                Please ensure that you review our privacy policy and other relevant documents before proceeding. Your data privacy is important to us, and we are committed to protecting your information.
+              <p>You may use the System for personal, non-commercial purposes. You agree not to:</p>
+              <ul className="list-disc list-inside mb-4">
+                <li>Use the System in a way that violates any applicable laws or regulations.</li>
+                <li>Use the System to collect or store personal information about others without their consent.</li>
+                <li>Attempt to gain unauthorized access to the System or its underlying infrastructure.</li>
+                <li>Modify, adapt, or create derivative works based on the System.</li>
+              </ul>
+              <p>
+                The System is provided "as is" without any warranties, express or implied. We do not warrant that the System will be error-free, uninterrupted, or secure.
               </p>
 
+              {/* Privacy Policy Section */}
               <h3 className="text-lg font-semibold mt-4">Privacy Policy</h3>
-              <p className="mt-2">
+              <p>
                 We collect personal information such as your name, email address, and other details you provide when signing up. We use this information to provide the services you've requested. We do not share your personal information with third parties without your consent, except as required by law.
               </p>
-              <p className="mt-2">
+              <p>
                 We implement appropriate security measures to protect your personal data from unauthorized access. However, please note that no method of transmission over the internet is 100% secure.
               </p>
-              <p className="mt-2">
-                You have the right to access, modify, or delete your personal information at any time by contacting us. By agreeing to these terms, you consent to the collection and use of your information in accordance with this privacy policy.
+              <p>
+                You have the right to access, modify, or delete your personal information at any time by contacting us at <a href="mailto:ihdpredictionteam@gmail.com" className="text-blue-600 hover:underline">ihdpredictionteam@gmail.com</a>.
               </p>
             </div>
             <div className="flex items-center mb-4">
@@ -277,7 +278,7 @@ const SignUp = () => {
                 className="mr-2"
               />
               <label htmlFor="agreeTerms" className="text-gray-700">
-                I agree to the terms and conditions and privacy policy.
+                I agree to the Terms of Use and Privacy Policy.
               </label>
             </div>
             <div className="flex justify-end">
@@ -285,7 +286,7 @@ const SignUp = () => {
                 className="bg-[#05747F] text-white py-2 px-4 rounded-lg font-medium mr-2"
                 onClick={handleAcceptTerms}
               >
-                Accept and Create Account
+                Create Account
               </button>
               <button
                 className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium"

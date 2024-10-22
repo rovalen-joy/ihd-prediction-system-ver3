@@ -6,10 +6,9 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc} from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import toast from 'react-hot-toast';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 const UserContext = createContext();
 
@@ -20,9 +19,9 @@ export const AuthContextProvider = ({ children }) => {
   // Signup function
   const createUser = async (email, password, firstName, lastName) => {
     try {
-      toast.dismiss('signup_loading'); // Dismiss any existing toast with the same ID
+      toast.dismiss(); // Dismiss any existing toasts
       toast.loading('Loading...', { id: 'signup_loading' });
-      
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
 
@@ -46,11 +45,11 @@ export const AuthContextProvider = ({ children }) => {
   // Signin function with improved error handling
   const signIn = async (email, password) => {
     try {
-      toast.dismiss('login_loading');
+      toast.dismiss();
       toast.loading('Loading...', { id: 'login_loading' });
-      
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
+
       toast.dismiss('login_loading');
       return userCredential;
     } catch (error) {
@@ -93,25 +92,29 @@ export const AuthContextProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      toast.dismiss('logout_loading');
+      toast.dismiss(); // Dismiss any active toasts
+
+      // Show the loading toast
       toast.loading('Logging out...', { id: 'logout_loading' });
 
+      // Perform the logout
       await signOut(auth);
-      
+
+      // After logout, dismiss loading and show success
       toast.dismiss('logout_loading');
       toast.success('Logged out successfully', { id: 'logout_success' });
     } catch (error) {
+      // In case of error, dismiss loading and show the error message
       toast.dismiss('logout_loading');
       console.error('Error logging out:', error.message);
       toast.error(`Failed to logout: ${error.message}`, { id: 'logout_error' });
-      throw error;
     }
   };
 
   // Reset Password function
   const resetPassword = async (email) => {
     try {
-      toast.dismiss('reset_loading');
+      toast.dismiss();
       toast.loading('Sending password reset email...', { id: 'reset_loading' });
 
       await sendPasswordResetEmail(auth, email);

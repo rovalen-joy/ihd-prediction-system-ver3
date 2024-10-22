@@ -48,8 +48,27 @@ const Login = () => {
       // Show the disclaimer modal
       setShowDisclaimer(true);
     } catch (e) {
-      toast.error('Invalid email or password');
+      // Handle specific authentication errors and show only one toast
       toast.dismiss('login_loading');
+
+      switch (e.code) {
+        case 'auth/invalid-email':
+          toast.error('The email address is not valid.', { id: 'login_invalid_email' });
+          break;
+        case 'auth/user-disabled':
+          toast.error('This user account has been disabled.', { id: 'login_user_disabled' });
+          break;
+        case 'auth/user-not-found':
+          toast.error('No account found with this email.', { id: 'login_user_not_found' });
+          break;
+        case 'auth/wrong-password':
+          toast.error('Invalid email or password', { id: 'login_wrong_password' });
+          break;
+        default:
+          toast.error('Failed to sign in. Please check your credentials and try again.', { id: 'login_failed' });
+          break;
+      }
+
       console.error(e.message);
     }
   };
@@ -57,7 +76,7 @@ const Login = () => {
   const handleAcceptDisclaimer = () => {
     // Pass firstName and lastName (hardcoded or fetched) via state when navigating to HomePage
     setShowDisclaimer(false);
-    navigate('/home', { state: { firstName: 'Rov', lastName: 'Calaguing' } }); // To be replace with the actual user info
+    navigate('/home', { state: { firstName: ' ', lastName: ' ' } }); 
   };
 
   const handleDeclineDisclaimer = async () => {

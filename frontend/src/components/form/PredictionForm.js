@@ -18,7 +18,7 @@ import {
   FaUserMd,
   FaHeart,
   FaCheckCircle,
-} from 'react-icons/fa'; // Imported icons
+} from 'react-icons/fa';
 
 // Utility function to check if all required fields have values
 function hasAllValues(obj) {
@@ -27,7 +27,8 @@ function hasAllValues(obj) {
     'firstname',
     'age',
     'sex',
-    'blood_pressure',
+    'blood_pressure_systolic',
+    'blood_pressure_diastolic',
     'cholesterol_level',
     'history_of_stroke',
     'history_of_diabetes',
@@ -43,7 +44,8 @@ const PredictionForm = () => {
     firstname: '',
     age: '',
     sex: '',
-    blood_pressure: '',
+    blood_pressure_systolic: '',
+    blood_pressure_diastolic: '',
     cholesterol_level: '',
     history_of_stroke: '',
     history_of_diabetes: '',
@@ -88,8 +90,9 @@ const PredictionForm = () => {
     const formattedDetails = {
       Sex: details.sex,
       Age: details.age,
-      HighBP: details.blood_pressure,
-      HighChol: details.cholesterol_level,
+      SystolicBP: details.blood_pressure_systolic,
+      DiastolicBP: details.blood_pressure_diastolic,
+      CholesterolLevel: details.cholesterol_level,
       Stroke: details.history_of_stroke,
       Diabetes: details.history_of_diabetes,
       Smoker: details.smoker,
@@ -361,25 +364,38 @@ const PredictionForm = () => {
         className='mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
         onSubmit={handleSubmit}
       >
-        {/* Blood Pressure */}
+        {/* Systolic Blood Pressure */}
         <div className='flex flex-col'>
           <label className='text-gray-700 font-semibold text-sm mb-1'>
-            Blood Pressure:
+            Systolic Blood Pressure:
           </label>
-          <select
+          <input
+            type='number'
+            min='0'
             className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+            name='blood_pressure_systolic'
+            value={details.blood_pressure_systolic}
             onChange={handleFormChange}
             required
-            name='blood_pressure'
-            value={details.blood_pressure}
-          >
-            <option value='' disabled>
-              Select
-            </option>
-            <option value='Low'>Low</option>
-            <option value='Normal'>Normal</option>
-            <option value='High'>High</option>
-          </select>
+            placeholder='Enter systolic blood pressure'
+          />
+        </div>
+
+        {/* Diastolic Blood Pressure */}
+        <div className='flex flex-col'>
+          <label className='text-gray-700 font-semibold text-sm mb-1'>
+            Diastolic Blood Pressure:
+          </label>
+          <input
+            type='number'
+            min='0'
+            className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+            name='blood_pressure_diastolic'
+            value={details.blood_pressure_diastolic}
+            onChange={handleFormChange}
+            required
+            placeholder='Enter diastolic blood pressure'
+          />
         </div>
 
         {/* Cholesterol Level */}
@@ -387,20 +403,17 @@ const PredictionForm = () => {
           <label className='text-gray-700 font-semibold text-sm mb-1'>
             Cholesterol Level:
           </label>
-          <select
+          <input
+            type='number'
+            min='0'
+            step='0.01'
             className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
-            onChange={handleFormChange}
-            required
             name='cholesterol_level'
             value={details.cholesterol_level}
-          >
-            <option value='' disabled>
-              Select
-            </option>
-            <option value='Low'>Low</option>
-            <option value='Normal'>Normal</option>
-            <option value='High'>High</option>
-          </select>
+            onChange={handleFormChange}
+            required
+            placeholder='Enter cholesterol level'
+          />
         </div>
 
         {/* History of Stroke */}

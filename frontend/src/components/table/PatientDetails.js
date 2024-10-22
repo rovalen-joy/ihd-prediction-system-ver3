@@ -12,6 +12,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { auth } from '../../firebase'; // Assuming you're using Firebase auth for user authentication
 
 const PatientDetails = () => {
   const { id } = useParams(); // Retrieve patient ID from URL
@@ -27,26 +28,40 @@ const PatientDetails = () => {
   useEffect(() => {
     const fetchPatientAndRecords = async () => {
       try {
+        // Fetch patient data
         const patientRef = doc(db, 'patients', id);
         const patientSnap = await getDoc(patientRef);
+
         if (patientSnap.exists()) {
-          setPatient({ id: patientSnap.id, data: patientSnap.data() });
+          const patientData = patientSnap.data();
+          console.log("Fetched patient data: ", patientData);
+
+          // Check if the authenticated user's UID matches the patient's userid
+          if (patientData.userid !== auth.currentUser.uid) {
+            throw new Error("Unauthorized: Patient userid does not match authenticated user.");
+          }
+
+          setPatient({ id: patientSnap.id, data: patientData });
+
+          // Fetch records subcollection
+          const recordsRef = collection(db, 'patients', id, 'records');
+          const q = query(recordsRef, orderBy('timestamp', 'desc'));
+          const recordsSnap = await getDocs(q);
+
+          const recordsData = recordsSnap.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          console.log("Fetched records: ", recordsData);
+          setRecords(recordsData);
+
         } else {
-          console.log('No such document!');
+          console.log('No such patient document!');
           toast.error('Patient not found.');
           setLoading(false);
           return;
         }
-
-        // Fetch records subcollection
-        const recordsRef = collection(db, 'patients', id, 'records');
-        const q = query(recordsRef, orderBy('timestamp', 'desc'));
-        const recordsSnap = await getDocs(q);
-        const recordsData = recordsSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setRecords(recordsData);
       } catch (error) {
         console.error('Error fetching patient and records:', error);
         toast.error('Failed to fetch patient details.');
@@ -58,7 +73,7 @@ const PatientDetails = () => {
     fetchPatientAndRecords();
   }, [id]);
 
-  // **Handle Record Deletion Modalt**
+  // **Handle Record Deletion Modal**
   useEffect(() => {
     const handleClickOutsideRecord = (event) => {
       if (recordModalRef.current && !recordModalRef.current.contains(event.target)) {
@@ -77,6 +92,7 @@ const PatientDetails = () => {
     };
   }, [selectedRecord]);
 
+  // **Handle Patient Modal Outside Click**
   useEffect(() => {
     const handleClickOutsidePatient = (event) => {
       if (patientModalRef.current && !patientModalRef.current.contains(event.target)) {
@@ -230,7 +246,6 @@ const PatientDetails = () => {
                   ))}
                 </tbody>
               </table>
-              {/* Removed Latest Prediction Legend */}
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import {
-  collection,
+  collectionGroup,
   query,
   orderBy,
   onSnapshot,
@@ -16,8 +16,8 @@ import debounce from 'lodash.debounce';
 
 const PredictionTable = () => {
   // State variables
-  const [patients, setPatients] = useState([]); // Original patient data
-  const [filteredPatients, setFilteredPatients] = useState([]); // Filtered and sorted data
+  const [records, setRecords] = useState([]); // Original record data
+  const [filteredRecords, setFilteredRecords] = useState([]); // Filtered and sorted data
   const [loading, setLoading] = useState(true); // Loading state
   const [searchTerm, setSearchTerm] = useState(''); // Search term
   const [sortBy, setSortBy] = useState('Date'); // Sort criterion: 'Name' or 'Date'
@@ -42,7 +42,7 @@ const PredictionTable = () => {
     };
   }, [debouncedSetSearchTerm]);
 
-  // Fetch patients from Firestore in real-time
+  // Fetch records from Firestore in real-time using collectionGroup
   useEffect(() => {
     if (!user) {
       console.log('No authenticated user found.');
@@ -50,30 +50,33 @@ const PredictionTable = () => {
       return;
     }
 
-    console.log(`Fetching patients for UID: ${user.uid}`);
+    console.log(`Fetching records for UID: ${user.uid}`);
     setLoading(true);
+
+    // Define the query on the 'records' collection group
     const q = query(
-      collection(db, 'patients'),
+      collectionGroup(db, 'records'),
       where('userid', '==', user.uid),
-      orderBy('timestamp', 'desc') // Default ordering by Date (descending)
+      orderBy('timestamp', 'desc') // Ordering by timestamp descending
     );
 
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
-        const fetchedPatients = querySnapshot.docs.map((doc) => ({
+        const fetchedRecords = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           data: doc.data(),
           date: doc.data().timestamp.toDate(),
+          patientDocId: doc.ref.parent.parent.id,
         }));
-        console.log('Fetched Patients:', fetchedPatients);
-        setPatients(fetchedPatients);
-        setFilteredPatients(fetchedPatients);
+        console.log('Fetched Records:', fetchedRecords);
+        setRecords(fetchedRecords);
+        setFilteredRecords(fetchedRecords);
         setLoading(false);
       },
       (error) => {
-        console.error('Error fetching patients:', error);
-        toast.error('Failed to fetch patient data.', {
+        console.error('Error fetching records:', error);
+        toast.error(`Failed to fetch prediction records: ${error.message}`, {
           style: {
             fontSize: '0.875rem', // 14px
             padding: '0.5rem', // 8px
@@ -86,10 +89,10 @@ const PredictionTable = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // Filter and sort patients based on search term and sort criteria
+  // Filter and sort records based on search term and sort criteria
   useEffect(() => {
-    const processPatients = () => {
-      let results = [...patients];
+    const processRecords = () => {
+      let results = [...records];
 
       // **Search Filtering**
       if (searchTerm) {
@@ -97,16 +100,12 @@ const PredictionTable = () => {
 
         // Check if searchTerm is numeric (allowing leading zeros)
         const isNumeric = /^\d+$/.test(searchTerm);
-        const parsedTerm = isNumeric ? parseInt(searchTerm, 10) : null;
+        const parsedTerm = isNumeric ? searchTerm.padStart(4, '0') : null;
 
         results = results.filter((item) => {
           const patientIDMatches = isNumeric
             ? item.data.patientID === parsedTerm
             : false; // Only match patientID if searchTerm is numeric
-
-          const patientIDFormatted = item.data.patientID
-            ? item.data.patientID.toString().padStart(4, '0')
-            : '';
 
           return (
             (item.data.firstname &&
@@ -114,7 +113,7 @@ const PredictionTable = () => {
             (item.data.lastname &&
               item.data.lastname.toLowerCase().includes(lowercasedTerm)) ||
             patientIDMatches ||
-            (patientIDFormatted && patientIDFormatted.includes(searchTerm)) // Match formatted patientID
+            (item.data.patientID && item.data.patientID.includes(searchTerm)) // Match formatted patientID
           );
         });
       }
@@ -142,11 +141,11 @@ const PredictionTable = () => {
         );
       }
 
-      setFilteredPatients(results);
+      setFilteredRecords(results);
     };
 
-    processPatients();
-  }, [patients, searchTerm, sortBy]);
+    processRecords();
+  }, [records, searchTerm, sortBy]);
 
   // **Reset to First Page when searchTerm or sortBy changes**
   useEffect(() => {
@@ -154,18 +153,21 @@ const PredictionTable = () => {
   }, [searchTerm, sortBy]);
 
   // **Handle Row Click to Navigate to Details**
-  const handleRowClick = (patientId) => {
-    navigate(`/patient-details/${patientId}`); 
+  const handleRowClick = (record) => {
+    // Navigate to patient details using patientID
+    // Ensure that 'patientID' is included in each record document
+    console.log('Navigating to Patient Details with ID:', record.patientDocId);
+    navigate(`/patient-details/${record.patientDocId}`);
   };
 
   // **Calculate Paginated Data**
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentPatients = filteredPatients.slice(
+  const currentRecords = filteredRecords.slice(
     indexOfFirstRecord,
     indexOfLastRecord
   );
-  const totalPages = Math.ceil(filteredPatients.length / recordsPerPage);
+  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
 
   return (
     <div className="flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-4 md:px-6 lg:px-10">
@@ -237,34 +239,34 @@ const PredictionTable = () => {
                       Loading...
                     </td>
                   </tr>
-                ) : currentPatients.length > 0 ? (
-                  currentPatients.map((data) => (
+                ) : currentRecords.length > 0 ? (
+                  currentRecords.map((record) => (
                     <tr
-                      key={data.id}
+                      key={record.id}
                       className={`bg-white text-center font-medium hover:bg-[#c6fbff] cursor-pointer transition-transform transform-gpu duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00717A]`}
-                      onClick={() => handleRowClick(data.id)}
-                      tabIndex="0" 
+                      onClick={() => handleRowClick(record)}
+                      tabIndex="0"
                       role="row"
-                      aria-label={`View details for patient ${data.data.firstname} ${data.data.lastname}`}
+                      aria-label={`View details for patient ${record.data.firstname} ${record.data.lastname}`}
                       title="View Details" // Tooltip
                     >
                       {/* Patient ID */}
                       <td className="font-medium py-2 px-1">
-                        {data.data.patientID
-                          ? data.data.patientID.toString().padStart(4, '0')
+                        {record.data.patientID
+                          ? record.data.patientID.toString().padStart(4, '0')
                           : '----'}
                       </td>
                       {/* Last Name */}
                       <td className="font-medium py-2 px-1">
-                        {data.data.lastname}
+                        {record.data.lastname}
                       </td>
                       {/* First Name */}
                       <td className="font-medium py-2 px-1">
-                        {data.data.firstname}
+                        {record.data.firstname}
                       </td>
                       {/* Date */}
                       <td className="font-medium py-2 px-1">
-                        {format(data.date, 'MM/dd/yyyy')}
+                        {format(record.date, 'MM/dd/yyyy')}
                       </td>
                     </tr>
                   ))
@@ -281,7 +283,7 @@ const PredictionTable = () => {
         </div>
 
         {/* Pagination Controls */}
-        {!loading && filteredPatients.length > recordsPerPage && (
+        {!loading && filteredRecords.length > recordsPerPage && (
           <div className="flex justify-center mt-4">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}

@@ -12,7 +12,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { auth } from '../../firebase'; 
+import { auth } from '../../firebase'; // Assuming you're using Firebase auth for user authentication
 
 const PatientDetails = () => {
   const { id } = useParams(); // Retrieve patient ID from URL
@@ -239,7 +239,7 @@ const PatientDetails = () => {
                           : 'N/A'}
                       </td>
                       <td className="px-4 py-2 border">
-                        {/*Blood_pressure is stored as separate systolic and diastolic */}
+                        {/* Assuming blood_pressure is stored as separate systolic and diastolic */}
                         {record.blood_pressure_systolic && record.blood_pressure_diastolic
                           ? `${record.blood_pressure_systolic}/${record.blood_pressure_diastolic}`
                           : record.blood_pressure || 'N/A'}
@@ -252,7 +252,12 @@ const PatientDetails = () => {
                           : 'N/A'}
                       </td>
                       <td className="px-4 py-2 border">{record.smoker}</td>
-                      <td className="px-4 py-2 border">{record.risk_result}</td>
+                      <td className="px-4 py-2 border">
+                        {/* Format risk_result as percentage */}
+                        {typeof record.risk_result === 'number'
+                          ? `${record.risk_result.toFixed(2)}%`
+                          : record.risk_result}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

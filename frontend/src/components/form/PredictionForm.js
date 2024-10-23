@@ -84,15 +84,26 @@ const PredictionForm = () => {
     e.preventDefault();
     if (isSubmitting) return; // Prevent multiple submissions
 
+    // Validate that BMI is a positive number
+    const bmiValue = parseFloat(details.BMI);
+    if (isNaN(bmiValue) || bmiValue <= 0) {
+      return toast.error('Please enter a valid BMI value.', {
+        style: {
+          fontSize: '1rem',
+          padding: '0.75rem',
+        },
+      });
+    }
+
     setIsSubmitting(true);
     const formattedDetails = {
       Sex: details.sex,
-      Age: details.age,
-      SystolicBP: details.blood_pressure_systolic,
-      DiastolicBP: details.blood_pressure_diastolic,
-      CholesterolLevel: details.cholesterol_level,
+      Age: parseInt(details.age, 10),
+      SystolicBP: parseInt(details.blood_pressure_systolic, 10),
+      DiastolicBP: parseInt(details.blood_pressure_diastolic, 10),
+      CholesterolLevel: parseInt(details.cholesterol_level, 10),
       Smoker: details.smoker,
-      BMI: details.BMI, // Include BMI in the payload
+      BMI: bmiValue, // Ensure BMI is a number
     };
     console.log('Sending data to backend:', formattedDetails);
     try {
@@ -101,7 +112,26 @@ const PredictionForm = () => {
         formattedDetails
       );
       console.log('Received response from backend:', response.data);
-      setResults(response.data.prediction);
+
+      // Ensure that the prediction is a number
+      let predictionResult = response.data.prediction;
+      if (typeof predictionResult === 'string') {
+        // Attempt to parse percentage from string if necessary
+        const parsed = parseFloat(predictionResult);
+        if (!isNaN(parsed)) {
+          predictionResult = parsed;
+        } else {
+          // Handle unexpected string format
+          predictionResult = 0; // Default or handle accordingly
+        }
+      }
+
+      // Optional: Validate that the prediction is within 0-100%
+      if (typeof predictionResult !== 'number' || predictionResult < 0 || predictionResult > 100) {
+        throw new Error('Invalid prediction result received from backend.');
+      }
+
+      setResults(predictionResult);
       setCurrentStep(3); // Move to Prediction Results step
       toast.success('Prediction completed.', {
         style: {
@@ -172,7 +202,7 @@ const PredictionForm = () => {
         patientID: patientId, // Assigning unique patientID
         firstname: details.firstname,
         lastname: details.lastname,
-        age: details.age,
+        age: parseInt(details.age, 10),
         sex: details.sex,
         userid: user.uid,
         createdAt: Timestamp.now(), // Assigning timestamp
@@ -181,8 +211,12 @@ const PredictionForm = () => {
       // Prepare record data with 'userid' and 'BMI'
       const recordData = {
         ...details,
+        blood_pressure_systolic: parseInt(details.blood_pressure_systolic, 10),
+        blood_pressure_diastolic: parseInt(details.blood_pressure_diastolic, 10),
+        cholesterol_level: parseInt(details.cholesterol_level, 10),
+        BMI: parseFloat(details.BMI),
         timestamp: Timestamp.now(),
-        risk_result: results,
+        risk_result: results, // Ensure this is a number
         userid: user.uid, // Adding 'userid' for querying
       };
       console.log('Saving record data:', recordData);
@@ -403,7 +437,7 @@ const PredictionForm = () => {
           <input
             type='number'
             min='0'
-            step='0.01' 
+            step='0.01' // Allows decimal values
             className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
             name='cholesterol_level'
             value={details.cholesterol_level}
@@ -421,7 +455,7 @@ const PredictionForm = () => {
           <input
             type='number'
             min='0'
-            step='0.01' 
+            step='0.01' // Allows decimal values
             className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
             name='BMI'
             value={details.BMI}
@@ -488,7 +522,7 @@ const PredictionForm = () => {
       <div className='flex items-center mb-6'>
         <FaHeart className='text-[#00717A] mr-2 text-xl' />
         <span className='text-gray-700 font-medium text-lg'>
-          The patient is <strong>{results}</strong> for Ischemic Heart Disease.
+          The patient has a <strong>{typeof results === 'number' ? `${results.toFixed(2)}%` : results}</strong> risk for Ischemic Heart Disease.
         </span>
       </div>
       <div className='flex justify-end gap-4'>

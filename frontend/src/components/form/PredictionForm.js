@@ -30,9 +30,8 @@ function hasAllValues(obj) {
     'blood_pressure_systolic',
     'blood_pressure_diastolic',
     'cholesterol_level',
-    'history_of_stroke',
-    'history_of_diabetes',
     'smoker',
+    'BMI', // Added BMI as a required field
   ];
   return requiredFields.every((field) => obj[field] && obj[field] !== '');
 }
@@ -47,9 +46,8 @@ const PredictionForm = () => {
     blood_pressure_systolic: '',
     blood_pressure_diastolic: '',
     cholesterol_level: '',
-    history_of_stroke: '',
-    history_of_diabetes: '',
     smoker: '',
+    BMI: '', // Added BMI
   };
 
   // Access the authenticated user from AuthContext
@@ -93,9 +91,8 @@ const PredictionForm = () => {
       SystolicBP: details.blood_pressure_systolic,
       DiastolicBP: details.blood_pressure_diastolic,
       CholesterolLevel: details.cholesterol_level,
-      Stroke: details.history_of_stroke,
-      Diabetes: details.history_of_diabetes,
       Smoker: details.smoker,
+      BMI: details.BMI, // Include BMI in the payload
     };
     console.log('Sending data to backend:', formattedDetails);
     try {
@@ -181,7 +178,7 @@ const PredictionForm = () => {
         createdAt: Timestamp.now(), // Assigning timestamp
       });
 
-      // Prepare record data with 'userid'
+      // Prepare record data with 'userid' and 'BMI'
       const recordData = {
         ...details,
         timestamp: Timestamp.now(),
@@ -406,7 +403,7 @@ const PredictionForm = () => {
           <input
             type='number'
             min='0'
-            step='0.01'
+            step='0.01' 
             className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
             name='cholesterol_level'
             value={details.cholesterol_level}
@@ -416,44 +413,22 @@ const PredictionForm = () => {
           />
         </div>
 
-        {/* History of Stroke */}
+        {/* BMI */}
         <div className='flex flex-col'>
           <label className='text-gray-700 font-semibold text-sm mb-1'>
-            History of Stroke:
+            BMI:
           </label>
-          <select
+          <input
+            type='number'
+            min='0'
+            step='0.01' 
             className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+            name='BMI'
+            value={details.BMI}
             onChange={handleFormChange}
-            name='history_of_stroke'
             required
-            value={details.history_of_stroke}
-          >
-            <option value='' disabled>
-              Select
-            </option>
-            <option value='Yes'>Yes</option>
-            <option value='No'>No</option>
-          </select>
-        </div>
-
-        {/* History of Diabetes */}
-        <div className='flex flex-col'>
-          <label className='text-gray-700 font-semibold text-sm mb-1'>
-            History of Diabetes:
-          </label>
-          <select
-            className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
-            onChange={handleFormChange}
-            name='history_of_diabetes'
-            required
-            value={details.history_of_diabetes}
-          >
-            <option value='' disabled>
-              Select
-            </option>
-            <option value='Yes'>Yes</option>
-            <option value='No'>No</option>
-          </select>
+            placeholder='Enter BMI'
+          />
         </div>
 
         {/* Smoker */}

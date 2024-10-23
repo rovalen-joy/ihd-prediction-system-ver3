@@ -12,7 +12,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { auth } from '../../firebase'; // Assuming you're using Firebase auth for user authentication
+import { auth } from '../../firebase'; 
 
 const PatientDetails = () => {
   const { id } = useParams(); // Retrieve patient ID from URL
@@ -220,8 +220,8 @@ const PatientDetails = () => {
                     <th className="px-4 py-2 border">Date & Time</th>
                     <th className="px-4 py-2 border">Blood Pressure</th>
                     <th className="px-4 py-2 border">Cholesterol Level</th>
-                    <th className="px-4 py-2 border">Stroke History</th>
-                    <th className="px-4 py-2 border">Diabetes History</th>
+                    {/* Removed "History of Stroke" and "History of Diabetes" columns */}
+                    <th className="px-4 py-2 border">BMI</th> {/* Added BMI column */}
                     <th className="px-4 py-2 border">Smoker</th>
                     <th className="px-4 py-2 border">Risk Result</th>
                   </tr>
@@ -234,12 +234,23 @@ const PatientDetails = () => {
                       onClick={() => setSelectedRecord(record)}
                     >
                       <td className="px-4 py-2 border">
-                        {format(record.timestamp.toDate(), 'MM/dd/yyyy HH:mm')}
+                        {record.timestamp
+                          ? format(record.timestamp.toDate(), 'MM/dd/yyyy HH:mm')
+                          : 'N/A'}
                       </td>
-                      <td className="px-4 py-2 border">{record.blood_pressure}</td>
+                      <td className="px-4 py-2 border">
+                        {/*Blood_pressure is stored as separate systolic and diastolic */}
+                        {record.blood_pressure_systolic && record.blood_pressure_diastolic
+                          ? `${record.blood_pressure_systolic}/${record.blood_pressure_diastolic}`
+                          : record.blood_pressure || 'N/A'}
+                      </td>
                       <td className="px-4 py-2 border">{record.cholesterol_level}</td>
-                      <td className="px-4 py-2 border">{record.history_of_stroke}</td>
-                      <td className="px-4 py-2 border">{record.history_of_diabetes}</td>
+                      {/* Removed "history_of_stroke" and "history_of_diabetes" cells */}
+                      <td className="px-4 py-2 border">
+                        {record.BMI !== undefined && record.BMI !== null
+                          ? record.BMI
+                          : 'N/A'}
+                      </td>
                       <td className="px-4 py-2 border">{record.smoker}</td>
                       <td className="px-4 py-2 border">{record.risk_result}</td>
                     </tr>

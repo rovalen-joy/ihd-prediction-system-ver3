@@ -30,8 +30,10 @@ function hasAllValues(obj) {
     'blood_pressure_systolic',
     'blood_pressure_diastolic',
     'cholesterol_level',
-    'smoker',
-    'BMI', // Added BMI as a required field
+    'weight',
+    'height',
+    'BMI',
+    'history_of_stroke',
   ];
   return requiredFields.every((field) => obj[field] && obj[field] !== '');
 }
@@ -46,8 +48,10 @@ const PredictionForm = () => {
     blood_pressure_systolic: '',
     blood_pressure_diastolic: '',
     cholesterol_level: '',
-    smoker: '',
-    BMI: '', // Added BMI
+    weight: '',
+    height: '',
+    BMI: '',
+    history_of_stroke: '',
   };
 
   // Access the authenticated user from AuthContext
@@ -73,10 +77,23 @@ const PredictionForm = () => {
   // Handle form input changes
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setDetails((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setDetails((prev) => {
+      const updatedDetails = { ...prev, [name]: value };
+
+      // Automatically calculate BMI when weight and height are provided
+      if (name === 'weight' || name === 'height') {
+        const weight = parseFloat(updatedDetails.weight);
+        const height = parseFloat(updatedDetails.height) / 100; // Convert cm to meters
+        if (weight > 0 && height > 0) {
+          const bmi = weight / (height * height);
+          updatedDetails.BMI = bmi.toFixed(2);
+        } else {
+          updatedDetails.BMI = '';
+        }
+      }
+
+      return updatedDetails;
+    });
   };
 
   // Handle form submission to get prediction results
@@ -87,7 +104,7 @@ const PredictionForm = () => {
     // Validate that BMI is a positive number
     const bmiValue = parseFloat(details.BMI);
     if (isNaN(bmiValue) || bmiValue <= 0) {
-      return toast.error('Please enter a valid BMI value.', {
+      return toast.error('Please enter valid weight and height to calculate BMI.', {
         style: {
           fontSize: '1rem',
           padding: '0.75rem',
@@ -101,9 +118,9 @@ const PredictionForm = () => {
       Age: parseInt(details.age, 10),
       SystolicBP: parseInt(details.blood_pressure_systolic, 10),
       DiastolicBP: parseInt(details.blood_pressure_diastolic, 10),
-      CholesterolLevel: parseInt(details.cholesterol_level, 10),
-      Smoker: details.smoker,
-      BMI: bmiValue, // Ensure BMI is a number
+      CholesterolLevel: parseFloat(details.cholesterol_level),
+      BMI: bmiValue, // Only BMI is sent to the backend
+      Stroke: details.history_of_stroke === 'Yes' ? 1 : 0,
     };
     console.log('Sending data to backend:', formattedDetails);
     try {
@@ -113,25 +130,31 @@ const PredictionForm = () => {
       );
       console.log('Received response from backend:', response.data);
 
-      // Ensure that the prediction is a number
       let predictionResult = response.data.prediction;
+      let riskPercentage = response.data.percentage;
+
       if (typeof predictionResult === 'string') {
-        // Attempt to parse percentage from string if necessary
-        const parsed = parseFloat(predictionResult);
-        if (!isNaN(parsed)) {
-          predictionResult = parsed;
-        } else {
-          // Handle unexpected string format
-          predictionResult = 0; // Default or handle accordingly
+        predictionResult = parseFloat(predictionResult);
+        if (isNaN(predictionResult)) {
+          predictionResult = 0;
         }
       }
 
-      // Optional: Validate that the prediction is within 0-100%
-      if (typeof predictionResult !== 'number' || predictionResult < 0 || predictionResult > 100) {
+      if (typeof riskPercentage === 'string') {
+        riskPercentage = parseFloat(riskPercentage);
+        if (isNaN(riskPercentage)) {
+          riskPercentage = 0;
+        }
+      }
+
+      if (typeof predictionResult !== 'number' || predictionResult < 0 || predictionResult > 1) {
         throw new Error('Invalid prediction result received from backend.');
       }
 
-      setResults(predictionResult);
+      setResults({
+        prediction: predictionResult,
+        percentage: riskPercentage,
+      });
       setCurrentStep(3); // Move to Prediction Results step
       toast.success('Prediction completed.', {
         style: {
@@ -196,32 +219,33 @@ const PredictionForm = () => {
         patientId = newCount.toString().padStart(4, '0'); // e.g., '0001'
       });
 
-      // Create a new patient document with patientID and timestamp
       const patientsRef = collection(db, 'patients');
       const newPatientRef = await addDoc(patientsRef, {
-        patientID: patientId, // Assigning unique patientID
+        patientID: patientId,
         firstname: details.firstname,
         lastname: details.lastname,
         age: parseInt(details.age, 10),
         sex: details.sex,
         userid: user.uid,
-        createdAt: Timestamp.now(), // Assigning timestamp
+        createdAt: Timestamp.now(),
       });
 
-      // Prepare record data with 'userid' and 'BMI'
       const recordData = {
         ...details,
         blood_pressure_systolic: parseInt(details.blood_pressure_systolic, 10),
         blood_pressure_diastolic: parseInt(details.blood_pressure_diastolic, 10),
-        cholesterol_level: parseInt(details.cholesterol_level, 10),
+        cholesterol_level: parseFloat(details.cholesterol_level),
+        weight: parseFloat(details.weight),
+        height: parseFloat(details.height),
         BMI: parseFloat(details.BMI),
+        history_of_stroke: details.history_of_stroke,
         timestamp: Timestamp.now(),
-        risk_result: results, // Ensure this is a number
-        userid: user.uid, // Adding 'userid' for querying
+        risk_result: results.prediction,
+        risk_percentage: results.percentage,
+        userid: user.uid,
       };
       console.log('Saving record data:', recordData);
 
-      // Save the record in the 'records' subcollection
       const recordsRef = collection(db, 'patients', newPatientRef.id, 'records');
       await addDoc(recordsRef, recordData);
 
@@ -348,7 +372,6 @@ const PredictionForm = () => {
             </option>
             <option value='Male'>Male</option>
             <option value='Female'>Female</option>
-            <option value='Other'>Other</option>
           </select>
         </div>
 
@@ -357,7 +380,6 @@ const PredictionForm = () => {
           <button
             type='button'
             onClick={() => {
-              // Validate Step 1 fields before proceeding
               const { firstname, lastname, age, sex } = details;
               if (!firstname || !lastname || !age || !sex) {
                 return toast.error('Please fill all patient personal details.', {
@@ -392,101 +414,143 @@ const PredictionForm = () => {
       </p>
       <form
         ref={formRef}
-        className='mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+        className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-6'
         onSubmit={handleSubmit}
       >
-        {/* Systolic Blood Pressure */}
-        <div className='flex flex-col'>
+        {/* Blood Pressure */}
+        <div className='flex flex-col md:col-span-2'>
           <label className='text-gray-700 font-semibold text-sm mb-1'>
-            Systolic Blood Pressure:
+            Blood Pressure (mm Hg):
           </label>
-          <input
-            type='number'
-            min='0'
-            className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
-            name='blood_pressure_systolic'
-            value={details.blood_pressure_systolic}
-            onChange={handleFormChange}
-            required
-            placeholder='Enter systolic blood pressure'
-          />
+          <div className='flex items-start'>
+            <div className='flex flex-col w-1/2 mr-2'>
+              <label className='text-gray-700 font-semibold text-sm mb-1'>
+                Systolic
+              </label>
+              <input
+                type='number'
+                min='0'
+                className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+                name='blood_pressure_systolic'
+                value={details.blood_pressure_systolic}
+                onChange={handleFormChange}
+                required
+                placeholder='Systolic'
+              />
+            </div>
+            <span className='text-gray-700 font-semibold mx-2 mt-8'>/</span>
+            <div className='flex flex-col w-1/2 ml-2'>
+              <label className='text-gray-700 font-semibold text-sm mb-1'>
+                Diastolic
+              </label>
+              <input
+                type='number'
+                min='0'
+                className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+                name='blood_pressure_diastolic'
+                value={details.blood_pressure_diastolic}
+                onChange={handleFormChange}
+                required
+                placeholder='Diastolic'
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Diastolic Blood Pressure */}
-        <div className='flex flex-col'>
-          <label className='text-gray-700 font-semibold text-sm mb-1'>
-            Diastolic Blood Pressure:
-          </label>
-          <input
-            type='number'
-            min='0'
-            className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
-            name='blood_pressure_diastolic'
-            value={details.blood_pressure_diastolic}
-            onChange={handleFormChange}
-            required
-            placeholder='Enter diastolic blood pressure'
-          />
+        {/* Cholesterol Level and History of Stroke */}
+        <div className='flex flex-col md:flex-row md:col-span-2'>
+          {/* Cholesterol Level */}
+          <div className='flex flex-col md:w-1/2 md:mr-2'>
+            <label className='text-gray-700 font-semibold text-sm mb-1'>
+              Cholesterol Level (mg/dL):
+            </label>
+            <input
+              type='number'
+              min='0'
+              step='0.01'
+              className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+              name='cholesterol_level'
+              value={details.cholesterol_level}
+              onChange={handleFormChange}
+              required
+              placeholder='Enter cholesterol level'
+            />
+          </div>
+          {/* History of Stroke */}
+          <div className='flex flex-col md:w-1/2 md:ml-2'>
+            <label className='text-gray-700 font-semibold text-sm mb-1'>
+              History of Stroke:
+            </label>
+            <select
+              className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+              name='history_of_stroke'
+              value={details.history_of_stroke}
+              onChange={handleFormChange}
+              required
+            >
+              <option value='' disabled>
+                Select
+              </option>
+              <option value='Yes'>Yes</option>
+              <option value='No'>No</option>
+            </select>
+          </div>
         </div>
 
-        {/* Cholesterol Level */}
-        <div className='flex flex-col'>
-          <label className='text-gray-700 font-semibold text-sm mb-1'>
-            Cholesterol Level:
-          </label>
-          <input
-            type='number'
-            min='0'
-            step='0.01' // Allows decimal values
-            className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
-            name='cholesterol_level'
-            value={details.cholesterol_level}
-            onChange={handleFormChange}
-            required
-            placeholder='Enter cholesterol level'
-          />
-        </div>
-
-        {/* BMI */}
-        <div className='flex flex-col'>
-          <label className='text-gray-700 font-semibold text-sm mb-1'>
-            BMI:
-          </label>
-          <input
-            type='number'
-            min='0'
-            step='0.01' // Allows decimal values
-            className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
-            name='BMI'
-            value={details.BMI}
-            onChange={handleFormChange}
-            required
-            placeholder='Enter BMI'
-          />
-        </div>
-
-        {/* Smoker */}
-        <div className='flex flex-col'>
-          <label className='text-gray-700 font-semibold text-sm mb-1'>
-            Smoker:
-          </label>
-          <select
-            className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
-            onChange={handleFormChange}
-            name='smoker'
-            required
-            value={details.smoker}
-          >
-            <option value='' disabled>
-              Select
-            </option>
-            <option value='Yes'>Yes</option>
-            <option value='No'>No</option>
-          </select>
+        {/* Weight, Height, and BMI */}
+        <div className='flex flex-col md:flex-row md:col-span-2'>
+          {/* Weight */}
+          <div className='flex flex-col md:w-1/3 md:mr-2'>
+            <label className='text-gray-700 font-semibold text-sm mb-1'>
+              Weight (kg):
+            </label>
+            <input
+              type='number'
+              min='0'
+              step='0.1'
+              className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+              name='weight'
+              value={details.weight}
+              onChange={handleFormChange}
+              required
+              placeholder='Enter weight'
+            />
+          </div>
+          {/* Height */}
+          <div className='flex flex-col md:w-1/3 md:mx-2'>
+            <label className='text-gray-700 font-semibold text-sm mb-1'>
+              Height (cm):
+            </label>
+            <input
+              type='number'
+              min='0'
+              step='0.1'
+              className='bg-gray-100 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+              name='height'
+              value={details.height}
+              onChange={handleFormChange}
+              required
+              placeholder='Enter height'
+            />
+          </div>
+          {/* BMI */}
+          <div className='flex flex-col md:w-1/3 md:ml-2'>
+            <label className='text-gray-700 font-semibold text-sm mb-1'>
+              BMI (kg/m²):
+            </label>
+            <input
+              type='text'
+              className='bg-gray-200 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+              name='BMI'
+              value={details.BMI}
+              readOnly
+              placeholder='BMI will be calculated'
+            />
+          </div>
         </div>
 
         {/* Back Button */}
-        <div className='flex justify-start col-span-1 md:col-span-2 lg:col-span-3'>
+        <div className='flex justify-start col-span-1 md:col-span-2'>
           <button
             type='button'
             onClick={() => setCurrentStep(1)}
@@ -498,7 +562,7 @@ const PredictionForm = () => {
         </div>
 
         {/* Submit Button */}
-        <div className='flex justify-end col-span-1 md:col-span-2 lg:col-span-3'>
+        <div className='flex justify-end col-span-1 md:col-span-2'>
           <button
             type='submit'
             className='bg-[#00717A] text-white font-semibold px-6 py-2 rounded-md hover:bg-[#005f61] flex items-center transition-colors duration-200'
@@ -522,7 +586,7 @@ const PredictionForm = () => {
       <div className='flex items-center mb-6'>
         <FaHeart className='text-[#00717A] mr-2 text-xl' />
         <span className='text-gray-700 font-medium text-lg'>
-          The patient has a <strong>{typeof results === 'number' ? `${results.toFixed(2)}%` : results}</strong> risk for Ischemic Heart Disease.
+          The patient has a <strong>{(results.percentage).toFixed(2)}%</strong> risk for Ischemic Heart Disease.
         </span>
       </div>
       <div className='flex justify-end gap-4'>

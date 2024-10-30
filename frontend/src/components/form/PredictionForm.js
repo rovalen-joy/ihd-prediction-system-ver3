@@ -114,12 +114,10 @@ const PredictionForm = () => {
 
     setIsSubmitting(true);
     const formattedDetails = {
-      Sex: details.sex,
-      Age: parseInt(details.age, 10),
-      SystolicBP: parseInt(details.blood_pressure_systolic, 10),
-      DiastolicBP: parseInt(details.blood_pressure_diastolic, 10),
-      CholesterolLevel: parseFloat(details.cholesterol_level),
-      BMI: bmiValue, // Only BMI is sent to the backend
+      Age: parseFloat(details.age),
+      BP_Syst: parseFloat(details.blood_pressure_systolic),
+      Chol: parseFloat(details.cholesterol_level),
+      BMI: bmiValue,
       Stroke: details.history_of_stroke === 'Yes' ? 1 : 0,
     };
     console.log('Sending data to backend:', formattedDetails);
@@ -130,26 +128,8 @@ const PredictionForm = () => {
       );
       console.log('Received response from backend:', response.data);
 
-      let predictionResult = response.data.prediction;
-      let riskPercentage = response.data.percentage;
-
-      if (typeof predictionResult === 'string') {
-        predictionResult = parseFloat(predictionResult);
-        if (isNaN(predictionResult)) {
-          predictionResult = 0;
-        }
-      }
-
-      if (typeof riskPercentage === 'string') {
-        riskPercentage = parseFloat(riskPercentage);
-        if (isNaN(riskPercentage)) {
-          riskPercentage = 0;
-        }
-      }
-
-      if (typeof predictionResult !== 'number' || predictionResult < 0 || predictionResult > 1) {
-        throw new Error('Invalid prediction result received from backend.');
-      }
+      const predictionResult = response.data.prediction;
+      const riskPercentage = response.data.percentage;
 
       setResults({
         prediction: predictionResult,
@@ -209,7 +189,7 @@ const PredictionForm = () => {
       // Transaction to ensure atomic increment of patientID
       let patientId;
       await runTransaction(db, async (transaction) => {
-        const counterRef = doc(db, 'counters', 'patient_count');
+        const counterRef = doc(db, 'counters', user.uid);
         const counterSnap = await transaction.get(counterRef);
         let newCount = 1;
         if (counterSnap.exists()) {
@@ -232,8 +212,8 @@ const PredictionForm = () => {
 
       const recordData = {
         ...details,
-        blood_pressure_systolic: parseInt(details.blood_pressure_systolic, 10),
-        blood_pressure_diastolic: parseInt(details.blood_pressure_diastolic, 10),
+        blood_pressure_systolic: parseFloat(details.blood_pressure_systolic),
+        blood_pressure_diastolic: parseFloat(details.blood_pressure_diastolic),
         cholesterol_level: parseFloat(details.cholesterol_level),
         weight: parseFloat(details.weight),
         height: parseFloat(details.height),
@@ -305,7 +285,6 @@ const PredictionForm = () => {
         Please enter the patient's personal information to proceed to the medical details.
       </p>
       <form
-        ref={formRef}
         className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-6'
       >
         {/* Last Name */}
@@ -413,7 +392,6 @@ const PredictionForm = () => {
         Please provide the patient's medical information to receive an accurate prediction.
       </p>
       <form
-        ref={formRef}
         className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-6'
         onSubmit={handleSubmit}
       >
@@ -540,7 +518,7 @@ const PredictionForm = () => {
             </label>
             <input
               type='text'
-              className='bg-gray-200 h-10 rounded-sm px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00717A]'
+              className='bg-gray-200 h-10 rounded-sm px-3 text-sm focus:outline-none'
               name='BMI'
               value={details.BMI}
               readOnly
@@ -586,7 +564,7 @@ const PredictionForm = () => {
       <div className='flex items-center mb-6'>
         <FaHeart className='text-[#00717A] mr-2 text-xl' />
         <span className='text-gray-700 font-medium text-lg'>
-          The patient has a <strong>{(results.percentage).toFixed(2)}%</strong> risk for Ischemic Heart Disease.
+          The patient is <strong>{results.prediction}</strong> to Ischemic Heart Disease with a risk percentage of <strong>{(results.percentage).toFixed(2)}%</strong>.
         </span>
       </div>
       <div className='flex justify-end gap-4'>

@@ -7,8 +7,9 @@ import {
   collection,
   addDoc,
   Timestamp,
-  runTransaction,
-  doc,
+  getDocs,
+  query,
+  where,
 } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { UserAuth } from '../../context/AuthContext';
@@ -186,32 +187,36 @@ const PredictionForm = () => {
         },
       });
 
-      // Transaction to ensure atomic increment of patientID
-      let patientId;
-      await runTransaction(db, async (transaction) => {
-        const counterRef = doc(db, 'counters', user.uid);
-        const counterSnap = await transaction.get(counterRef);
-        let newCount = 1;
-        if (counterSnap.exists()) {
-          newCount = counterSnap.data().count + 1;
-        }
-        transaction.set(counterRef, { count: newCount }, { merge: true });
-        patientId = newCount.toString().padStart(4, '0'); // e.g., '0001'
-      });
-
       const patientsRef = collection(db, 'patients');
-      const newPatientRef = await addDoc(patientsRef, {
-        patientID: patientId,
-        firstname: details.firstname,
-        lastname: details.lastname,
-        age: parseInt(details.age, 10),
-        sex: details.sex,
-        userid: user.uid,
-        createdAt: Timestamp.now(),
-      });
+
+      // **Check if patient exists**
+      const q = query(
+        patientsRef,
+        where('firstname', '==', details.firstname),
+        where('lastname', '==', details.lastname),
+        where('userid', '==', user.uid)
+      );
+
+      const querySnapshot = await getDocs(q);
+      let patientDocRef;
+
+      if (!querySnapshot.empty) {
+        // **Patient exists**
+        patientDocRef = querySnapshot.docs[0].ref;
+      } else {
+        // **Patient does not exist, create new patient document**
+        const newPatientDocRef = await addDoc(patientsRef, {
+          firstname: details.firstname,
+          lastname: details.lastname,
+          age: parseInt(details.age, 10),
+          sex: details.sex,
+          userid: user.uid,
+          createdAt: Timestamp.now(),
+        });
+        patientDocRef = newPatientDocRef;
+      }
 
       const recordData = {
-        ...details,
         blood_pressure_systolic: parseFloat(details.blood_pressure_systolic),
         blood_pressure_diastolic: parseFloat(details.blood_pressure_diastolic),
         cholesterol_level: parseFloat(details.cholesterol_level),
@@ -226,7 +231,7 @@ const PredictionForm = () => {
       };
       console.log('Saving record data:', recordData);
 
-      const recordsRef = collection(db, 'patients', newPatientRef.id, 'records');
+      const recordsRef = collection(patientDocRef, 'records');
       await addDoc(recordsRef, recordData);
 
       toast.dismiss('loadingResults');

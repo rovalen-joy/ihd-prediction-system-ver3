@@ -12,10 +12,11 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { auth } from '../../firebase'; // Assuming you're using Firebase auth for user authentication
+import { UserAuth } from '../../context/AuthContext';
 
 const PatientDetails = () => {
   const { id } = useParams(); // Retrieve patient ID from URL
+  const { user } = UserAuth(); // Access authenticated user from context
   const [patient, setPatient] = useState(null);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,13 @@ const PatientDetails = () => {
   useEffect(() => {
     const fetchPatientAndRecords = async () => {
       try {
+        console.log('Authenticated User:', user);
+        console.log('Patient ID:', id);
+
+        if (!user) {
+          throw new Error('User not authenticated.');
+        }
+
         // Fetch patient data
         const patientRef = doc(db, 'patients', id);
         const patientSnap = await getDoc(patientRef);
@@ -35,9 +43,17 @@ const PatientDetails = () => {
         if (patientSnap.exists()) {
           const patientData = patientSnap.data();
           console.log("Fetched patient data: ", patientData);
+          
+          // Check if 'userid' field exists
+          if (!patientData.userid) {
+            throw new Error("Patient document is missing 'userid' field.");
+          }
+
+          console.log('Authenticated UID:', user.uid);
+          console.log('Patient UID:', patientData.userid);
 
           // Check if the authenticated user's UID matches the patient's userid
-          if (patientData.userid !== auth.currentUser.uid) {
+          if (patientData.userid !== user.uid) {
             throw new Error("Unauthorized: Patient userid does not match authenticated user.");
           }
 
@@ -64,14 +80,20 @@ const PatientDetails = () => {
         }
       } catch (error) {
         console.error('Error fetching patient and records:', error);
-        toast.error('Failed to fetch patient details.');
+        if (error.code) {
+          console.error('Error Code:', error.code);
+        }
+        if (error.message) {
+          console.error('Error Message:', error.message);
+        }
+        toast.error(`Failed to fetch patient details: ${error.message}`);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPatientAndRecords();
-  }, [id]);
+  }, [id, user]);
 
   // **Handle Record Deletion Modal**
   useEffect(() => {
@@ -126,13 +148,23 @@ const PatientDetails = () => {
       toast.success('Prediction record deleted successfully.');
     } catch (error) {
       console.error('Error deleting prediction record:', error);
-      toast.error('Failed to delete prediction record.');
+      if (error.code) {
+        console.error('Error Code:', error.code);
+      }
+      if (error.message) {
+        console.error('Error Message:', error.message);
+      }
+      toast.error(`Failed to delete prediction record: ${error.message}`);
     }
   };
 
   // **Handle Deletion of the Patient**
   const handleDeletePatient = async () => {
     try {
+      if (!patient) {
+        throw new Error('Patient data is missing.');
+      }
+
       // Delete all records in the 'records' subcollection
       const recordsRef = collection(db, 'patients', patient.id, 'records');
       const recordsSnap = await getDocs(recordsRef);
@@ -147,7 +179,13 @@ const PatientDetails = () => {
       navigate('/prediction-table'); // Redirect back to the table
     } catch (error) {
       console.error('Error deleting patient record:', error);
-      toast.error('Failed to delete patient record.');
+      if (error.code) {
+        console.error('Error Code:', error.code);
+      }
+      if (error.message) {
+        console.error('Error Message:', error.message);
+      }
+      toast.error(`Failed to delete patient record: ${error.message}`);
     }
   };
 
@@ -183,10 +221,6 @@ const PatientDetails = () => {
 
       {/* Unified Container for Patient Info and Prediction History */}
       <div className="w-full bg-white shadow-md rounded-md p-6 border-2 border-[#299FA8]">
-        {/* Patient ID Header */}
-        <h2 className="text-xl font-semibold mb-4 text-[#00717A]">
-          Patient ID: {data.patientID.toString().padStart(4, '0')}
-        </h2>
 
         {/* Combined Patient Name, Age, and Sex in One Row with Equal Spacing */}
         <div className="flex flex-row justify-between w-full mb-6">
@@ -217,13 +251,15 @@ const PatientDetails = () => {
               <table className="min-w-full table-auto border-collapse">
                 <thead>
                   <tr className="bg-[#299FA8] text-white">
-                    <th className="px-4 py-2 border">Date & Time</th>
+                    <th className="px-4 py-2 border">Date &amp; Time</th>
                     <th className="px-4 py-2 border">Blood Pressure</th>
                     <th className="px-4 py-2 border">Cholesterol Level</th>
-                    {/* Removed "History of Stroke" and "History of Diabetes" columns */}
-                    <th className="px-4 py-2 border">BMI</th> {/* Added BMI column */}
-                    <th className="px-4 py-2 border">Smoker</th>
+                    <th className="px-4 py-2 border">BMI</th>
+                    <th className="px-4 py-2 border">Weight</th>
+                    <th className="px-4 py-2 border">Height</th>
+                    <th className="px-4 py-2 border">History of Stroke</th>
                     <th className="px-4 py-2 border">Risk Result</th>
+                    <th className="px-4 py-2 border">Risk Percentage</th> {/* New Column */}
                   </tr>
                 </thead>
                 <tbody>
@@ -232,6 +268,10 @@ const PatientDetails = () => {
                       key={record.id}
                       className="bg-white text-center font-medium hover:bg-gray-100 transition-colors duration-200 cursor-pointer relative"
                       onClick={() => setSelectedRecord(record)}
+                      tabIndex="0"
+                      role="row"
+                      aria-label={`View details for record on ${record.timestamp ? format(record.timestamp.toDate(), 'MM/dd/yyyy') : 'N/A'}`}
+                      title="View Details" // Tooltip
                     >
                       <td className="px-4 py-2 border">
                         {record.timestamp
@@ -239,25 +279,31 @@ const PatientDetails = () => {
                           : 'N/A'}
                       </td>
                       <td className="px-4 py-2 border">
-                        {/* Assuming blood_pressure is stored as separate systolic and diastolic */}
                         {record.blood_pressure_systolic && record.blood_pressure_diastolic
                           ? `${record.blood_pressure_systolic}/${record.blood_pressure_diastolic}`
-                          : record.blood_pressure || 'N/A'}
+                          : 'N/A'}
                       </td>
                       <td className="px-4 py-2 border">{record.cholesterol_level}</td>
-                      {/* Removed "history_of_stroke" and "history_of_diabetes" cells */}
                       <td className="px-4 py-2 border">
                         {record.BMI !== undefined && record.BMI !== null
                           ? record.BMI
                           : 'N/A'}
                       </td>
-                      <td className="px-4 py-2 border">{record.smoker}</td>
+                      <td className="px-4 py-2 border">{record.weight}</td>
+                      <td className="px-4 py-2 border">{record.height}</td>
                       <td className="px-4 py-2 border">
-                        {/* Format risk_result as percentage */}
+                        {record.history_of_stroke}
+                      </td>
+                      <td className="px-4 py-2 border">
                         {typeof record.risk_result === 'number'
                           ? `${record.risk_result.toFixed(2)}%`
                           : record.risk_result}
                       </td>
+                      <td className="px-4 py-2 border">
+                        {typeof record.risk_percentage === 'number'
+                          ? `${record.risk_percentage.toFixed(2)}%`
+                          : record.risk_percentage || 'N/A'}
+                      </td> {/* New Cell */}
                     </tr>
                   ))}
                 </tbody>

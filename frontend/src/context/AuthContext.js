@@ -25,11 +25,12 @@ export const AuthContextProvider = ({ children }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
 
-      // Store the user's first name and last name in Firestore under the "users" collection
+      // Store the user's first name, last name, email, and uid in Firestore under the "users" collection
       await setDoc(doc(db, 'users', userId), {
         firstName,
         lastName,
         email,
+        uid: userId, // Added uid field
       });
 
       toast.dismiss('signup_loading');

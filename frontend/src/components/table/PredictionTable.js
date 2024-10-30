@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import {
-  collectionGroup,
+  collection,
   query,
   orderBy,
   onSnapshot,
@@ -10,14 +10,13 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { UserAuth } from '../../context/AuthContext';
-import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import debounce from 'lodash.debounce';
 
 const PredictionTable = () => {
   // State variables
-  const [records, setRecords] = useState([]); // Original record data
-  const [filteredRecords, setFilteredRecords] = useState([]); // Filtered and sorted data
+  const [patients, setPatients] = useState([]); // Original patient data
+  const [filteredPatients, setFilteredPatients] = useState([]); // Filtered and sorted data
   const [loading, setLoading] = useState(true); // Loading state
   const [searchTerm, setSearchTerm] = useState(''); // Search term
   const [sortBy, setSortBy] = useState('Date'); // Sort criterion: 'Name' or 'Date'
@@ -25,7 +24,7 @@ const PredictionTable = () => {
 
   // Pagination state variables
   const [currentPage, setCurrentPage] = useState(1); // Tracks the current page
-  const recordsPerPage = 10; // Number of records per page
+  const patientsPerPage = 10; // Number of patients per page
 
   const navigate = useNavigate();
 
@@ -42,7 +41,7 @@ const PredictionTable = () => {
     };
   }, [debouncedSetSearchTerm]);
 
-  // Fetch records from Firestore in real-time using collectionGroup
+  // Fetch patients from Firestore in real-time
   useEffect(() => {
     if (!user) {
       console.log('No authenticated user found.');
@@ -50,33 +49,31 @@ const PredictionTable = () => {
       return;
     }
 
-    console.log(`Fetching records for UID: ${user.uid}`);
+    console.log(`Fetching patients for UID: ${user.uid}`);
     setLoading(true);
 
-    // Define the query on the 'records' collection group
+    // Define the query on the 'patients' collection
     const q = query(
-      collectionGroup(db, 'records'),
+      collection(db, 'patients'),
       where('userid', '==', user.uid),
-      orderBy('timestamp', 'desc') // Ordering by timestamp descending
+      orderBy('createdAt', 'desc') // Ordering by creation date descending
     );
 
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
-        const fetchedRecords = querySnapshot.docs.map((doc) => ({
+        const fetchedPatients = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           data: doc.data(),
-          date: doc.data().timestamp.toDate(),
-          patientDocId: doc.ref.parent.parent.id,
         }));
-        console.log('Fetched Records:', fetchedRecords);
-        setRecords(fetchedRecords);
-        setFilteredRecords(fetchedRecords);
+        console.log('Fetched Patients:', fetchedPatients);
+        setPatients(fetchedPatients);
+        setFilteredPatients(fetchedPatients);
         setLoading(false);
       },
       (error) => {
-        console.error('Error fetching records:', error);
-        toast.error(`Failed to fetch prediction records: ${error.message}`, {
+        console.error('Error fetching patients:', error);
+        toast.error(`Failed to fetch patients: ${error.message}`, {
           style: {
             fontSize: '0.875rem', // 14px
             padding: '0.5rem', // 8px
@@ -89,31 +86,21 @@ const PredictionTable = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // Filter and sort records based on search term and sort criteria
+  // Filter and sort patients based on search term and sort criteria
   useEffect(() => {
-    const processRecords = () => {
-      let results = [...records];
+    const processPatients = () => {
+      let results = [...patients];
 
       // **Search Filtering**
       if (searchTerm) {
         const lowercasedTerm = searchTerm.toLowerCase();
 
-        // Check if searchTerm is numeric (allowing leading zeros)
-        const isNumeric = /^\d+$/.test(searchTerm);
-        const parsedTerm = isNumeric ? searchTerm.padStart(4, '0') : null;
-
         results = results.filter((item) => {
-          const patientIDMatches = isNumeric
-            ? item.data.patientID === parsedTerm
-            : false; // Only match patientID if searchTerm is numeric
-
           return (
             (item.data.firstname &&
               item.data.firstname.toLowerCase().includes(lowercasedTerm)) ||
             (item.data.lastname &&
-              item.data.lastname.toLowerCase().includes(lowercasedTerm)) ||
-            patientIDMatches ||
-            (item.data.patientID && item.data.patientID.includes(searchTerm)) // Match formatted patientID
+              item.data.lastname.toLowerCase().includes(lowercasedTerm))
           );
         });
       }
@@ -137,15 +124,15 @@ const PredictionTable = () => {
         });
       } else if (sortBy === 'Date') {
         results.sort(
-          (a, b) => b.data.timestamp.seconds - a.data.timestamp.seconds
+          (a, b) => b.data.createdAt.seconds - a.data.createdAt.seconds
         );
       }
 
-      setFilteredRecords(results);
+      setFilteredPatients(results);
     };
 
-    processRecords();
-  }, [records, searchTerm, sortBy]);
+    processPatients();
+  }, [patients, searchTerm, sortBy]);
 
   // **Reset to First Page when searchTerm or sortBy changes**
   useEffect(() => {
@@ -153,21 +140,20 @@ const PredictionTable = () => {
   }, [searchTerm, sortBy]);
 
   // **Handle Row Click to Navigate to Details**
-  const handleRowClick = (record) => {
-    // Navigate to patient details using patientID
-    // Ensure that 'patientID' is included in each record document
-    console.log('Navigating to Patient Details with ID:', record.patientDocId);
-    navigate(`/patient-details/${record.patientDocId}`);
+  const handleRowClick = (patient) => {
+    // Navigate to patient details using patient ID
+    console.log('Navigating to Patient Details with ID:', patient.id);
+    navigate(`/patient-details/${patient.id}`);
   };
 
   // **Calculate Paginated Data**
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = filteredRecords.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
+  const indexOfLastPatient = currentPage * patientsPerPage;
+  const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
+  const currentPatients = filteredPatients.slice(
+    indexOfFirstPatient,
+    indexOfLastPatient
   );
-  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
+  const totalPages = Math.ceil(filteredPatients.length / patientsPerPage);
 
   return (
     <div className="flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-4 md:px-6 lg:px-10">
@@ -185,10 +171,10 @@ const PredictionTable = () => {
           <div className="relative w-full md:w-2/5 lg:w-2/5 mb-3 md:mb-0">
             <input
               type="text"
-              placeholder="Search patient or patient ID"
+              placeholder="Search patient by name"
               className="h-8 px-3 rounded-2xl w-full focus-visible:outline-0 text-sm"
               onChange={(e) => debouncedSetSearchTerm(e.target.value)}
-              aria-label="Search patients by name or ID"
+              aria-label="Search patients by name"
             />
             <IoSearch
               className="absolute right-2 top-2 text-[#d0d0d0]"
@@ -214,7 +200,7 @@ const PredictionTable = () => {
 
         {/* Instruction Note */}
         <p className="text-sm text-white mt-2">
-          Click on a patient record to view full details.
+          Click on a patient to view full details.
         </p>
 
         {/* Patient Data Table */}
@@ -226,7 +212,6 @@ const PredictionTable = () => {
             <table className="w-full table-auto border-collapse text-sm">
               <thead>
                 <tr className="bg-[#299FA8] text-white">
-                  <th className="font-medium py-3 px-1">Patient ID</th>
                   <th className="font-medium py-3 px-1">Last Name</th>
                   <th className="font-medium py-3 px-1">First Name</th>
                   <th className="font-medium py-3 px-1">Date</th>
@@ -235,45 +220,43 @@ const PredictionTable = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="4" className="text-center text-sm py-2">
+                    <td colSpan="3" className="text-center text-sm py-2">
                       Loading...
                     </td>
                   </tr>
-                ) : currentRecords.length > 0 ? (
-                  currentRecords.map((record) => (
+                ) : currentPatients.length > 0 ? (
+                  currentPatients.map((patient) => (
                     <tr
-                      key={record.id}
+                      key={patient.id}
                       className={`bg-white text-center font-medium hover:bg-[#c6fbff] cursor-pointer transition-transform transform-gpu duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00717A]`}
-                      onClick={() => handleRowClick(record)}
+                      onClick={() => handleRowClick(patient)}
                       tabIndex="0"
                       role="row"
-                      aria-label={`View details for patient ${record.data.firstname} ${record.data.lastname}`}
+                      aria-label={`View details for patient ${patient.data.firstname} ${patient.data.lastname}`}
                       title="View Details" // Tooltip
                     >
-                      {/* Patient ID */}
-                      <td className="font-medium py-2 px-1">
-                        {record.data.patientID
-                          ? record.data.patientID.toString().padStart(4, '0')
-                          : '----'}
-                      </td>
                       {/* Last Name */}
                       <td className="font-medium py-2 px-1">
-                        {record.data.lastname}
+                        {patient.data.lastname}
                       </td>
                       {/* First Name */}
                       <td className="font-medium py-2 px-1">
-                        {record.data.firstname}
+                        {patient.data.firstname}
                       </td>
                       {/* Date */}
                       <td className="font-medium py-2 px-1">
-                        {format(record.date, 'MM/dd/yyyy')}
+                        {patient.data.createdAt
+                          ? new Date(
+                              patient.data.createdAt.seconds * 1000
+                            ).toLocaleDateString()
+                          : 'N/A'}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="text-center text-white text-sm py-2">
-                      No records found.
+                    <td colSpan="3" className="text-center text-white text-sm py-2">
+                      No patients found.
                     </td>
                   </tr>
                 )}
@@ -283,7 +266,7 @@ const PredictionTable = () => {
         </div>
 
         {/* Pagination Controls */}
-        {!loading && filteredRecords.length > recordsPerPage && (
+        {!loading && filteredPatients.length > patientsPerPage && (
           <div className="flex justify-center mt-4">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}

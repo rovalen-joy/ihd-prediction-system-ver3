@@ -597,7 +597,7 @@ const PredictionForm = () => {
     <div className='flex justify-center flex-col gap-6 mt-4 pt-6 pb-10 px-4 md:px-10 lg:px-20'>
       {/* Header */}
       <div className='flex justify-center'>
-        <h1 className='text-2xl md:text-3xl lg:text-4xl text-[#00717A] font-bold uppercase'>
+        <h1 className='text-lg md:text-2xl lg:text-4xl font-bold text-center mb-1 mt-1 text-[#00717A] uppercase'>
           ISCHEMIC HEART DISEASE PREDICTION
         </h1>
       </div>

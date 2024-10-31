@@ -156,10 +156,10 @@ const PredictionTable = () => {
   const totalPages = Math.ceil(filteredPatients.length / patientsPerPage);
 
   return (
-    <div className="flex justify-center flex-col gap-4 mt-6 pt-4 pb-8 px-4 md:px-6 lg:px-10">
+    <div className="flex justify-center flex-col gap-4 mt-1 pt-4 pb-8 px-4 md:px-6 lg:px-10">
       {/* Header */}
       <div className="flex justify-center">
-        <h1 className="text-lg md:text-xl lg:text-2xl text-[#00717A] font-bold uppercase">
+        <h1 className="text-lg md:text-2xl lg:text-4xl font-bold text-center mb-1 text-[#00717A] uppercase">
           Patients' Records
         </h1>
       </div>

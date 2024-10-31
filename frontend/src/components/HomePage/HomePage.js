@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../../context/AuthContext';
-import { FaUserPlus, FaRegChartBar, FaSave } from 'react-icons/fa';
+import { FaUserPlus, FaSave } from 'react-icons/fa';
 import Joyride, { EVENTS, STATUS } from 'react-joyride';
+import { FaHeartPulse } from "react-icons/fa6";
 
 const HomePage = () => {
   const { userData } = UserAuth(); // Get the user data from AuthContext
@@ -173,7 +174,7 @@ const HomePage = () => {
       </div>
 
       {/* Steps with Icons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl joyride-steps">
+      <div className="grid grid-cols-3 gap-6 max-w-5xl joyride-steps">
         {/* Step 1 */}
         <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center joyride-step1">
           <FaUserPlus className="text-4xl text-[#05747F] mb-4" />
@@ -185,7 +186,7 @@ const HomePage = () => {
 
         {/* Step 2 */}
         <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center joyride-step2">
-          <FaRegChartBar className="text-4xl text-[#05747F] mb-4" />
+          <FaHeartPulse className="text-4xl text-[#05747F] mb-4" />
           <h2 className="text-xl font-bold mb-2 text-[#353535]">2. Generate Prediction</h2>
           <p className="text-gray-600 text-center">
             Use our prediction form to assess the patient’s risk of ischemic heart disease and review the results.
@@ -197,7 +198,7 @@ const HomePage = () => {
           <FaSave className="text-4xl text-[#05747F] mb-4" />
           <h2 className="text-xl font-bold mb-2 text-[#353535]">3. Save and Review</h2>
           <p className="text-gray-600 text-center">
-            Save predictions for future reference and review past assessments at any time.
+            Save predictions for future reference and review past assessments at any time in Patient's Records.
           </p>
         </div>
       </div>
@@ -213,13 +214,13 @@ const HomePage = () => {
           Go to Prediction Form
         </button>
 
-        {/* Patient History Button */}
+        {/* System Analytics Button */}
         <button
           className="bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200 joyride-patient-history"
-          onClick={() => navigate('/prediction-table')}
-          title="View saved patient history and predictions"
+          onClick={() => navigate('/analytics')}
+          title="View saved system analytics and data insights"
         >
-          View Patient History
+          View System Analystics
         </button>
       </div>
     </div>

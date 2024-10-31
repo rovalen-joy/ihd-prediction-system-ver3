@@ -95,14 +95,17 @@ export const AuthContextProvider = ({ children }) => {
     try {
       toast.dismiss(); // Dismiss any active toasts
 
+      // Use a unique toast ID to avoid duplicate toasts
+      const toastId = 'logout_loading'
+
       // Show the loading toast
-      toast.loading('Logging out...', { id: 'logout_loading' });
+      toast.loading('Logging out...', { id: toastId });
 
       // Perform the logout
       await signOut(auth);
 
       // After logout, dismiss loading and show success
-      toast.dismiss('logout_loading');
+      toast.dismiss(toastId);
       toast.success('Logged out successfully', { id: 'logout_success' });
     } catch (error) {
       // In case of error, dismiss loading and show the error message

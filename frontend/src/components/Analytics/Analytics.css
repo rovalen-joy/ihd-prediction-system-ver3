@@ -1,0 +1,202 @@
+  /* Container for Consistent Width */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Main Padding */
+  .p-6 {
+    padding: 1.5rem;
+  }
+  
+  .bg-gray-50 {
+    background-color: #f9fafb;
+  }
+  
+  .rounded-lg {
+    border-radius: 0.5rem;
+  }
+  
+  .shadow-md {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-inner {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Grid Layout */
+  .grid {
+    display: grid;
+  }
+  
+  .grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .gap-6 {
+    gap: 1.5rem;
+  }
+  
+  .gap-8 {
+    gap: 2rem;
+  }
+  
+  /* Responsive Charts */
+  .responsive-container {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Accessibility Enhancements */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+  
+  /* Tooltip Customization */
+  .recharts-tooltip-wrapper {
+    font-size: 0.875rem;
+  }
+  
+  .recharts-tooltip-inner {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+  }
+  
+  .recharts-tooltip-item {
+    font-size: 14px;
+  }
+  
+  /* Legend Styling */
+  .recharts-legend-wrapper {
+    font-size: 14px;
+  }
+  
+  .recharts-legend-item-text {
+    font-size: 14px;
+  }
+  
+  /* Spinner Animation */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  /* Tabs Customization */
+  .tab-list {
+    border-bottom: 1px solid #ccc;
+    margin: 0;
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: space-evenly; 
+    list-style: none;
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tab {
+    display: inline-block;
+    border: 1px solid transparent;
+    border-bottom: none;
+    position: relative;
+    padding: 0.75rem 1.5rem; 
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+    font-weight: 600; 
+    color: #00717A; 
+    font-size: 1rem; 
+  }
+
+  .custom-shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 -4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  
+  .react-tabs__tab--selected {
+    background: #00717A;
+    color: #ffffff;
+    font-weight: 700;
+    border-color: #ccc #ccc #ffffff;
+    border-radius: 5px 5px 0 0;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); 
+  }
+  
+  .react-tabs__tab:hover {
+    transform: scale(1.05);
+    color: #00717A;
+  }
+  
+  .react-tabs__tab-panel {
+    display: none;
+  }
+  
+  .react-tabs__tab-panel--selected {
+    display: block;
+  }
+  
+  /* Timeframe Selection Styling */
+  #timeframe {
+    border: 1px solid #ccc;
+    border-radius: 0.375rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='20'%20height='20'%20viewBox='0%200%2020%2020'%3E%3Cpath%20fill='%2300717A'%20d='M5.516 7.548l4.484 4.484 4.484-4.484-1.414-1.414L10 9.707 6.93 6.134l-1.414 1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+  }
+  
+  #timeframe:focus {
+    outline: none;
+    border-color: #00717A;
+    box-shadow: 0 0 0 2px rgba(0, 113, 122, 0.3);
+  }
+  
+  select#timeframe::-ms-expand {
+    display: none;
+  }
+  
+  /* Summary Metrics Styling */
+  .grid > div {
+    text-align: center;
+  }
+  
+  /* Scatter Chart Point Styling */
+  .recharts-dot {
+    stroke: #ffffff;
+    stroke-width: 2;
+  }  
+
+  .section-spacing {
+    margin-top: 3rem; 
+    margin-bottom: 3rem; 
+  }
+  

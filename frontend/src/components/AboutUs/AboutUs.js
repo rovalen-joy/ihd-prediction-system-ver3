@@ -8,7 +8,7 @@ const AboutUs = () => {
       <div className="flex justify-center flex-col gap-2 mt-1 pt-4 pb-4 px-4 md:px-10 lg:px-20">
         {/* Header */}
         <div className="flex justify-center">
-          <h1 className="text-xl md:text-xl lg:text-3xl text-[#00717A] font-bold uppercase">
+          <h1 className="text-lg md:text-2xl lg:text-4xl font-bold text-center mb-1 mt-1 text-[#00717A]">
             ABOUT US
           </h1>
         </div>

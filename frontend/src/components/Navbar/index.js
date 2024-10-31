@@ -3,7 +3,8 @@ import './index.css';
 import { UserAuth } from '../../context/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { MdLogout, MdMenu, MdClose } from 'react-icons/md';
-import { FaUser, FaHome, FaRegChartBar, FaListAlt, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
+import { FaUser, FaHome, FaListAlt, FaInfoCircle, FaQuestionCircle, FaChartBar } from 'react-icons/fa';
+import { FaHeartPulse } from "react-icons/fa6";
 import toast from 'react-hot-toast';
 
 const NavigationBar = () => {
@@ -15,12 +16,6 @@ const NavigationBar = () => {
     try {
       await logout();
       navigate('/');
-      toast.success('Logged out successfully.', {
-        style: {
-          fontSize: '1rem',
-          padding: '0.75rem',
-        },
-      });
     } catch (error) {
       console.error('Logout Error:', error);
       toast.error('Failed to logout. Please try again.', {
@@ -134,6 +129,20 @@ const NavigationBar = () => {
               </li>
               <li>
                 <NavLink
+                  to='/analytics'
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'flex items-center bg-white text-[#00717A] rounded px-3 py-2 font-medium'
+                      : 'flex items-center hover:bg-[#005f61] rounded px-3 py-2 font-medium'
+                    }
+                    onClick={closeSidebar}
+                >
+                  <FaChartBar className="mr-2" />
+                  Analytics
+                  </NavLink>
+              </li>
+              <li>
+                <NavLink
                   to='/prediction-form'
                   className={({ isActive }) =>
                     isActive
@@ -142,7 +151,7 @@ const NavigationBar = () => {
                   }
                   onClick={closeSidebar}
                 >
-                  <FaRegChartBar className="mr-2" />
+                  <FaHeartPulse className="mr-2" />
                   Prediction
                 </NavLink>
               </li>

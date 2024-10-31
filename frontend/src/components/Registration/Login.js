@@ -83,11 +83,9 @@ const Login = () => {
     setShowDisclaimer(false);
     try {
       await logout();
-      toast.success('You have been logged out.');
       navigate('/');
     } catch (error) {
       console.error('Error logging out:', error);
-      toast.error('Failed to log out.');
     }
   };
 

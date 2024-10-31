@@ -157,7 +157,7 @@ const Profile = () => {
       {/* Header */}
       <div className="w-full bg-gray-50 py-4 px-4">
         <div className="text-center">
-          <h1 className="text-xl md:text-xl lg:text-3xl text-[#00717A] font-bold uppercase text-center mt-6">
+          <h1 className="text-lg md:text-2xl lg:text-4xl font-bold text-center mb-1 mt-1 text-[#00717A] uppercase">
             Profile Settings
           </h1>
           <p className="text-lg text-gray-600 mt-2">

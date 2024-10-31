@@ -15,6 +15,7 @@ import FAQ from './components/Faq/Faq';
 import Profile from './components/Profile/Profile';
 import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 import TermsOfUse from './components/TermsOfUse/TermsUse';
+import Analytics from './components/Analytics/Analytics';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path='/about-us' element={<AboutUs />} />
             <Route path='/faq' element={<FAQ />} /> 
             <Route path='/profile' element={<Profile />} />
+            <Route path='/analytics' element={<Analytics />} />
           </Route>
 
           {/* PatientDetails */}
